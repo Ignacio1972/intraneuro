@@ -1,0 +1,285 @@
+/* Modal Styles - INTRANEURO */
+
+/* Base Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease;
+}
+
+.modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideIn 0.3s ease;
+}
+
+/* Close Button */
+.close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--text-secondary);
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.3s ease;
+}
+
+.close:hover {
+    color: var(--text-primary);
+}
+
+/* Login Modal */
+.login-content {
+    width: 400px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.login-container {
+    padding: 3rem 2rem;
+    text-align: center;
+}
+
+.login-logo {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 1.5rem;
+}
+
+.login-container h2 {
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    font-weight: 400;
+}
+
+#loginForm .form-group {
+    margin-bottom: 1rem;
+}
+
+#loginForm input {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+#loginForm .btn-primary {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+    margin-top: 1rem;
+}
+
+/* Admission Modal */
+#admissionModal .modal-content {
+    width: 700px;
+    padding: 2rem;
+}
+
+#admissionModal h2 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+}
+
+/* Patient Modal */
+.patient-modal-content {
+    width: 1000px;
+    padding: 0;
+}
+
+.patient-modal-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 400px;
+}
+
+.modal-section {
+    padding: 2rem;
+}
+
+.modal-section h2 {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.admission-section {
+    border-right: 1px solid var(--border-color);
+}
+
+.discharge-section {
+    background-color: var(--background);
+}
+
+/* Patient Data Display */
+.patient-info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.patient-info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.info-value {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+/* Discharge Form in Modal */
+.discharge-form {
+    margin-top: 1rem;
+}
+
+.discharge-form .form-group {
+    margin-bottom: 1rem;
+}
+
+.ranking-selector {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.star {
+    font-size: 1.5rem;
+    color: var(--border-color);
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.star:hover,
+.star.active {
+    color: var(--warning-color);
+}
+
+/* Modal Footer */
+.modal-footer {
+    padding: 2rem;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--background);
+}
+
+.observations-section {
+    margin-top: 1.5rem;
+}
+
+.observations-section h3 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.observations-section textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    resize: vertical;
+}
+
+/* Timeline */
+#patientTimeline {
+    margin-bottom: 2rem;
+}
+
+.timeline-item {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-left: 2rem;
+    position: relative;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 0.5rem;
+    top: 0.5rem;
+    width: 8px;
+    height: 8px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+}
+
+.timeline-date {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    min-width: 100px;
+}
+
+.timeline-event {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        margin: 1rem;
+    }
+    
+    .patient-modal-split {
+        grid-template-columns: 1fr;
+    }
+    
+    .admission-section {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .login-content {
+        width: 90%;
+        max-width: 400px;
+    }
+}
