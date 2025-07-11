@@ -58,7 +58,7 @@
                     <p>Pacientes Activos</p>
                 </div>
                 <div class="dashboard-card">
-                    <p class="stat-label">Promedio estadía</p>
+                    <p class="stat-label">Altas Programadas para Mañana</p>
                     <p class="stat-value" id="avgStay">0 días</p>
                 </div>
                 <div class="dashboard-card">
@@ -104,19 +104,26 @@
                     <div id="dischargeData"></div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <div id="patientTimeline"></div>
-                <div class="observations-section">
-                    <h3>Observaciones</h3>
-                    <textarea id="patientObservations"></textarea>
-                    <button class="btn btn-secondary" onclick="saveObservations()">Guardar Observaciones</button>
-                </div>
-            </div>
+          <div class="modal-footer">
+    <div id="patientTimeline"></div>
+    <div class="observations-container">
+        <div class="observations-column">
+            <h3>Observaciones</h3>
+            <textarea id="patientObservations"></textarea>
+            <button class="btn btn-secondary" onclick="saveObservations()">Guardar Observaciones</button>
+        </div>
+        <div class="observations-column">
+            <h3>Pendientes</h3>
+            <textarea id="patientPendingTasks" placeholder="Tareas o procedimientos pendientes..."></textarea>
+            <button class="btn btn-secondary" onclick="savePendingTasks()">Guardar Pendientes</button>
         </div>
     </div>
+</div>
+        </div>
+        </div>
 
     <!-- New Admission Modal -->
-    <div id="admissionModal" class="modal">
+    <div id="admissionModal" class="modal admission-modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Nuevo Ingreso</h2>
@@ -184,6 +191,10 @@
                             <label><input type="radio" name="allergies" value="yes"> Sí</label>
                         </div>
                         <textarea id="allergyDetails" style="display: none;" placeholder="Especifique alergias..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Pendientes</label>
+                        <textarea id="pendingTasks" placeholder="Tareas o procedimientos pendientes..." rows="3"></textarea>
                     </div>
                 </div>
 

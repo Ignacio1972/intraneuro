@@ -140,12 +140,9 @@ function updateDashboard() {
     }
     
     // Calculate average stay
-    if (activePatients.length > 0) {
-        const avgDays = activePatients.reduce((sum, p) => sum + p.daysInHospital, 0) / activePatients.length;
-        document.getElementById('avgStay').textContent = `${Math.round(avgDays)} días`;
-    } else {
-        document.getElementById('avgStay').textContent = '0 días';
-    }
+    // TODO: Implementar altas programadas para mañana
+    // Por ahora mostramos 0 altas programadas
+    document.getElementById("avgStay").textContent = "0";
     
     // Week admissions (mock)
     document.getElementById('weekAdmissions').textContent = '3';

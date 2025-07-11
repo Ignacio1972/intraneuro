@@ -91,7 +91,7 @@ function addPatientClickHandlers() {
     const patientElements = document.querySelectorAll('[data-patient-id]');
     
     patientElements.forEach(element => {
-        element.addEventListener('dblclick', (e) => {
+        element.addEventListener('click', (e) => {
             const patientId = parseInt(e.currentTarget.dataset.patientId);
             openPatientModal(patientId);
         });
