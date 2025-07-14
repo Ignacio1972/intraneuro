@@ -1,0 +1,44 @@
+# Archivos de configuración sensibles
+.env
+*.env.local
+*.env.production
+
+# Backups
+*.backup
+*.backup.*
+backups/
+
+# Logs
+logs/
+*.log
+
+# Dependencias (cuando implementes el backend)
+node_modules/
+npm-debug.log*
+
+# Base de datos local
+*.sqlite
+*.db
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Certificados SSL (nunca subir estos)
+*.pem
+*.key
+*.crt
+
+# Archivos temporales
+*.tmp
+*.swp
+*~
+
+# Backend específico
+backend/.env
+backend/node_modules/
+backend/logs/

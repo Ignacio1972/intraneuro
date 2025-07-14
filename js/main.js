@@ -3,7 +3,7 @@
 // Global state
 let currentUser = null;
 let patients = [];
-let viewMode = 'cards';
+let viewMode = 'list';
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize event listeners
     initializeEventListeners();
     
-    // Load mock data for testing
+    // Load mock data for testing (remove in production)
     loadMockData();
 });
 
@@ -27,7 +27,9 @@ function initializeEventListeners() {
     document.querySelectorAll('.view-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const view = e.target.dataset.view;
-            switchView(view);
+            if (view) { // Solo si tiene data-view (evita el botón Imágenes)
+                switchView(view);
+            }
         });
     });
     
@@ -93,7 +95,8 @@ function showMainApp() {
     document.getElementById('loginModal').classList.remove('active');
     document.getElementById('mainApp').style.display = 'block';
     document.getElementById('currentUser').textContent = `Usuario: ${currentUser}`;
-    updateDashboard();
+    // MODIFICADO: Usar la nueva función con API
+    updateDashboardFromAPI();
     renderPatients();
 }
 
@@ -129,23 +132,59 @@ function switchView(view) {
     renderPatients();
 }
 
-// Update dashboard
+// Update dashboard (función original mantenida como fallback)
 function updateDashboard() {
     const activePatients = patients.filter(p => p.status === 'active');
     
-    // Update patient count
+    // Update patient count (RESTAURADO - dinámico)
     const countElement = document.querySelector('.patient-count');
     if (countElement) {
         countElement.textContent = activePatients.length;
     }
     
-    // Calculate average stay
-    // TODO: Implementar altas programadas para mañana
-    // Por ahora mostramos 0 altas programadas
-    document.getElementById("avgStay").textContent = "0";
+    // Calculate scheduled discharges for tomorrow (RESTAURADO - dinámico)
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
     
-    // Week admissions (mock)
-    document.getElementById('weekAdmissions').textContent = '3';
+    const scheduledDischarges = activePatients.filter(patient => {
+        // Si el paciente tiene una fecha esperada de alta
+        return patient.expectedDischargeDate === tomorrowStr;
+    }).length;
+    
+    document.getElementById("avgStay").textContent = scheduledDischarges;
+    
+    // Week admissions (RESTAURADO - dinámico)
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    
+    const weekAdmissions = patients.filter(patient => {
+        const admissionDate = new Date(patient.admissionDate);
+        return admissionDate >= oneWeekAgo;
+    }).length;
+    
+    document.getElementById('weekAdmissions').textContent = weekAdmissions;
+}
+
+// NUEVA FUNCIÓN: Actualizar dashboard desde API con fallback
+async function updateDashboardFromAPI() {
+    try {
+        console.log('Intentando actualizar dashboard desde API...');
+        const stats = await apiRequest('/dashboard/stats');
+        
+        // Actualizar contadores con datos reales
+        document.querySelector('.patient-count').textContent = stats.activePatients;
+        document.getElementById("avgStay").textContent = stats.scheduledDischarges;
+        document.getElementById('weekAdmissions').textContent = stats.weekAdmissions;
+        
+        console.log('✅ Dashboard actualizado desde API:', stats);
+        
+    } catch (error) {
+        console.error('⚠️ Error actualizando dashboard desde API:', error);
+        console.log('Usando fallback con datos locales...');
+        // Fallback a función original
+        updateDashboard();
+    }
 }
 
 // Set date field to today
@@ -181,7 +220,7 @@ function getInitials(name) {
     return name.substring(0, 2).toUpperCase();
 }
 
-// Load mock data for testing
+// Load mock data for testing (MANTENER SOLO PARA DESARROLLO)
 function loadMockData() {
     patients = [
         {
@@ -197,7 +236,8 @@ function loadMockData() {
             allergies: 'Penicilina',
             admittedBy: 'Dr. María Silva',
             status: 'active',
-            daysInHospital: 14
+            daysInHospital: calculateDays('2024-12-28'),
+            expectedDischargeDate: null // Para altas programadas
         },
         {
             id: 2,
@@ -212,7 +252,8 @@ function loadMockData() {
             allergies: null,
             admittedBy: 'Dr. Carlos Mendoza',
             status: 'active',
-            daysInHospital: 3
+            daysInHospital: calculateDays('2025-01-08'),
+            expectedDischargeDate: null
         },
         {
             id: 3,
@@ -227,16 +268,10 @@ function loadMockData() {
             allergies: 'Lactosa',
             admittedBy: 'Dr. Ana Rodríguez',
             status: 'active',
-            daysInHospital: 25
+            daysInHospital: calculateDays('2024-12-16'),
+            expectedDischargeDate: null
         }
     ];
-    
-    // Update days in hospital
-    patients.forEach(patient => {
-        if (patient.status === 'active') {
-            patient.daysInHospital = calculateDays(patient.admissionDate);
-        }
-    });
 }
 
 // Save observations

@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Handle admission form submission
+// MODIFICADA: Handle admission form submission con API
 async function handleAdmission(e) {
     e.preventDefault();
     
@@ -64,11 +64,64 @@ async function handleAdmission(e) {
         return;
     }
     
-    // Add patient
+    // NUEVO: Intentar guardar en API primero
+    try {
+        const response = await apiRequest('/patients', {
+            method: 'POST',
+            body: JSON.stringify(formData)
+        });
+        
+        if (response && response.patient) {
+            console.log('Paciente guardado en BD:', response);
+            
+            // Crear objeto paciente con datos de respuesta
+            const newPatient = {
+                ...response.patient,
+                admissionDate: formData.admissionDate,
+                diagnosis: formData.diagnosis,
+                diagnosisText: formData.diagnosisText,
+                diagnosisDetails: formData.diagnosisDetails,
+                allergies: formData.allergies,
+                admittedBy: formData.admittedBy,
+                status: 'active',
+                daysInHospital: calculateDays(formData.admissionDate),
+                scheduledDischarge: false
+            };
+            
+            // Actualizar array local para mantener sincronía
+            patients.push(newPatient);
+            
+            // Show success message
+            showAdmissionSuccess(newPatient);
+            
+            // Reset form
+            e.target.reset();
+            document.getElementById('allergyDetails').style.display = 'none';
+            
+            // Close modal y actualizar vista
+            setTimeout(() => {
+                closeModal('admissionModal');
+                updateDashboard();
+                // Recargar pacientes desde API para mantener sincronía
+                if (typeof loadPatientsFromAPI === 'function') {
+                    loadPatientsFromAPI().then(() => renderPatients());
+                } else {
+                    renderPatients();
+                }
+            }, 1500);
+            
+            return; // Salir si API funcionó
+        }
+    } catch (error) {
+        console.log('Error guardando en API, usando fallback local:', error);
+    }
+    
+    // FALLBACK: Lógica original si API falla
     const newPatient = {
         ...formData,
         id: Date.now(), // Temporary ID generation
-        daysInHospital: calculateDays(formData.admissionDate)
+        daysInHospital: calculateDays(formData.admissionDate),
+        scheduledDischarge: false
     };
     
     patients.push(newPatient);
@@ -88,12 +141,27 @@ async function handleAdmission(e) {
     }, 1500);
 }
 
-// Check for existing patient
-function checkExistingPatient() {
+// MODIFICADA: Check for existing patient con API
+async function checkExistingPatient() {
     const rut = document.getElementById('patientRut').value;
     if (!rut) return;
     
-    // Find patient history
+    // NUEVO: Intentar buscar en API primero
+    try {
+        const response = await apiRequest(`/patients/search?rut=${encodeURIComponent(rut)}`);
+        
+        if (response && response.found && response.previousAdmissions) {
+            const patientHistory = response.previousAdmissions;
+            if (patientHistory.length > 0) {
+                showReadmissionAlert(patientHistory);
+                return;
+            }
+        }
+    } catch (error) {
+        console.log('Error buscando en API, usando datos locales:', error);
+    }
+    
+    // FALLBACK: Buscar en datos locales
     const patientHistory = patients.filter(p => p.rut === rut && p.status === 'discharged');
     
     if (patientHistory.length > 0) {
@@ -115,8 +183,8 @@ function showReadmissionAlert(history) {
         <div style="background: #FFF3CD; border: 1px solid #FFEAA7; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
             <h4 style="color: #856404; margin-bottom: 0.5rem;">⚠️ Paciente con historial previo</h4>
             <p style="color: #856404; margin: 0;">
-                Último egreso: ${formatDate(lastAdmission.dischargeDate)}<br>
-                Diagnóstico previo: ${lastAdmission.diagnosis} - ${lastAdmission.diagnosisText}<br>
+                Último egreso: ${formatDate(lastAdmission.dischargeDate || lastAdmission.discharge_date)}<br>
+                Diagnóstico previo: ${lastAdmission.diagnosis || lastAdmission.diagnosis_code} - ${lastAdmission.diagnosisText || lastAdmission.diagnosis_text}<br>
                 Total de ingresos previos: ${history.length}
             </p>
         </div>

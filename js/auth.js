@@ -1,6 +1,6 @@
 // auth.js - INTRANEURO Authentication Functions
 
-// Mock users for testing
+// Mock users for testing (MANTENER SOLO COMO FALLBACK)
 const users = [
     { username: 'admin', password: 'admin123', name: 'Administrador' },
     { username: 'doctor1', password: 'doctor123', name: 'Dr. María Silva' },
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Handle login
+// Handle login - ACTUALIZADO PARA USAR API
 async function handleLogin(e) {
     e.preventDefault();
     
@@ -32,32 +32,52 @@ async function handleLogin(e) {
     // Add loading state
     form.classList.add('loading');
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+        // NUEVO: Usar API
+        const response = await apiRequest('/login', {
+            method: 'POST',
+            body: JSON.stringify({ username, password })
+        });
+        
+        if (response.token) {
+            // Guardar token
+            API_CONFIG.setToken(response.token);
+            
+            // Guardar usuario
+            sessionStorage.setItem('currentUser', response.user.full_name);
+            currentUser = response.user.full_name;
+            
+            showLoginMessage('¡Bienvenido!', 'success');
+            
+            setTimeout(() => {
+                form.classList.remove('loading');
+                showMainApp();
+            }, 1000);
+        }
+    } catch (error) {
+        console.log('Error en login API, usando fallback:', error);
+        
+        // FALLBACK: Si falla API, usar método antiguo
         const user = authenticateUser(username, password);
         
         if (user) {
-            // Success
-            showLoginMessage('¡Bienvenido!', 'success');
             sessionStorage.setItem('currentUser', user.name);
             currentUser = user.name;
+            showLoginMessage('¡Bienvenido! (modo offline)', 'success');
             
             setTimeout(() => {
                 form.classList.remove('loading');
                 showMainApp();
             }, 1000);
         } else {
-            // Error
             form.classList.remove('loading');
             showLoginMessage('Usuario o contraseña incorrectos', 'error');
-            
-            // Clear password field
             document.getElementById('password').value = '';
         }
-    }, 1000);
+    }
 }
 
-// Authenticate user
+// Authenticate user (fallback local)
 function authenticateUser(username, password) {
     return users.find(u => u.username === username && u.password === password);
 }
@@ -91,9 +111,14 @@ function showLoginMessage(message, type) {
     }, 3000);
 }
 
-// Handle logout
+// Handle logout - ACTUALIZADO
 function handleLogout() {
     if (confirm('¿Está seguro que desea cerrar sesión?')) {
+        // Limpiar token
+        if (typeof API_CONFIG !== 'undefined') {
+            API_CONFIG.removeToken();
+        }
+        localStorage.removeItem('token');
         sessionStorage.removeItem('currentUser');
         currentUser = null;
         
@@ -115,7 +140,9 @@ function handleLogout() {
 // Check session
 function checkSession() {
     const savedUser = sessionStorage.getItem('currentUser');
-    if (!savedUser) {
+    const token = localStorage.getItem('token');
+    
+    if (!savedUser || !token) {
         handleLogout();
         return false;
     }

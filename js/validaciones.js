@@ -1,117 +1,50 @@
 // validaciones.js - INTRANEURO Validation Functions
 
-// Validate Chilean RUT
+// MODIFICADO: Validate Chilean RUT - Ahora acepta cualquier formato
 function validateRut(rut) {
-    // Remove dots and hyphen
-    rut = rut.replace(/\./g, '').replace(/-/g, '');
-    
-    // Check format
-    if (!/^\d{7,8}[0-9kK]$/.test(rut)) {
-        return false;
+    // Si no hay RUT o está vacío, es válido (no obligatorio)
+    if (!rut || rut.trim() === '') {
+        return true;
     }
     
-    // Split number and verifier
-    const rutNumber = rut.slice(0, -1);
-    const verifier = rut.slice(-1).toUpperCase();
-    
-    // Calculate verifier digit
-    let sum = 0;
-    let multiplier = 2;
-    
-    for (let i = rutNumber.length - 1; i >= 0; i--) {
-        sum += parseInt(rutNumber[i]) * multiplier;
-        multiplier = multiplier === 7 ? 2 : multiplier + 1;
-    }
-    
-    const expectedVerifier = 11 - (sum % 11);
-    let calculatedVerifier;
-    
-    if (expectedVerifier === 11) {
-        calculatedVerifier = '0';
-    } else if (expectedVerifier === 10) {
-        calculatedVerifier = 'K';
-    } else {
-        calculatedVerifier = expectedVerifier.toString();
-    }
-    
-    return verifier === calculatedVerifier;
+    // Acepta cualquier formato con al menos 3 caracteres
+    return rut.trim().length >= 3;
 }
 
-// Format RUT input
+// MODIFICADO: Format RUT input - Simplificado, solo limpia espacios
 function formatRut(rut) {
-    // Remove all non-numeric characters except K
-    rut = rut.replace(/[^0-9kK]/g, '').toUpperCase();
-    
-    if (rut.length < 2) return rut;
-    
-    // Split into groups
-    const verifier = rut.slice(-1);
-    const numbers = rut.slice(0, -1);
-    
-    // Add dots
-    let formatted = '';
-    for (let i = numbers.length - 1, j = 0; i >= 0; i--, j++) {
-        if (j > 0 && j % 3 === 0) {
-            formatted = '.' + formatted;
-        }
-        formatted = numbers[i] + formatted;
-    }
-    
-    return formatted + '-' + verifier;
+    // Solo quitar espacios al inicio y final
+    return rut ? rut.trim() : '';
 }
 
-// Auto-format RUT on input
+// MODIFICADO: Auto-format RUT on input - Deshabilitado validación estricta
 document.addEventListener('DOMContentLoaded', () => {
     const rutInputs = document.querySelectorAll('input[id*="Rut"]');
     
     rutInputs.forEach(input => {
-        input.addEventListener('input', (e) => {
-            const cursorPos = e.target.selectionStart;
-            const oldValue = e.target.value;
-            const newValue = formatRut(oldValue);
-            
-            e.target.value = newValue;
-            
-            // Maintain cursor position
-            const diff = newValue.length - oldValue.length;
-            e.target.setSelectionRange(cursorPos + diff, cursorPos + diff);
-        });
-        
+        // Solo limpiar espacios, no formatear
         input.addEventListener('blur', (e) => {
-            if (e.target.value && !e.target.disabled) {
-                const isValid = validateRut(e.target.value);
-                e.target.style.borderColor = isValid ? '' : 'var(--danger-color)';
-                
-                if (!isValid && e.target.value.length > 0) {
-                    showFieldError(e.target, 'RUT inválido');
-                } else {
-                    clearFieldError(e.target);
-                }
+            if (e.target.value) {
+                e.target.value = e.target.value.trim();
             }
+            // No mostrar errores de validación
+            clearFieldError(e.target);
         });
     });
 });
 
-// Validate phone number
+// MODIFICADO: Validate phone number - Ahora más permisivo
 function validatePhone(phone) {
-    // Chilean phone format: +56 9 XXXX XXXX
-    const cleanPhone = phone.replace(/\D/g, '');
-    return cleanPhone.length >= 8 && cleanPhone.length <= 12;
+    // Acepta cualquier formato con al menos 6 caracteres
+    if (!phone || phone.trim() === '') {
+        return true; // Teléfono vacío es válido
+    }
+    return phone.trim().length >= 6;
 }
 
-// Format phone number
+// MODIFICADO: Format phone number - Solo limpia espacios
 function formatPhone(phone) {
-    const cleanPhone = phone.replace(/\D/g, '');
-    
-    if (cleanPhone.length === 9 && cleanPhone.startsWith('9')) {
-        // Mobile number without country code
-        return `+56 9 ${cleanPhone.slice(1, 5)} ${cleanPhone.slice(5)}`;
-    } else if (cleanPhone.length === 11 && cleanPhone.startsWith('569')) {
-        // Mobile with country code
-        return `+56 9 ${cleanPhone.slice(3, 7)} ${cleanPhone.slice(7)}`;
-    }
-    
-    return phone; // Return original if doesn't match patterns
+    return phone ? phone.trim() : '';
 }
 
 // Show field error
@@ -163,10 +96,10 @@ function validateRequiredFields(formId) {
     return isValid;
 }
 
-// Age validation
+// MODIFICADO: Age validation - Más permisivo
 function validateAge(age) {
     const numAge = parseInt(age);
-    return numAge >= 1 && numAge <= 120;
+    return numAge >= 1 && numAge <= 150; // Aumentado el límite
 }
 
 // Date validation
@@ -183,20 +116,20 @@ function validateDate(dateString) {
     return date <= today;
 }
 
-// Phone input formatting
+// MODIFICADO: Phone input formatting - Simplificado
 document.addEventListener('DOMContentLoaded', () => {
     const phoneInputs = document.querySelectorAll('input[type="tel"]');
     
     phoneInputs.forEach(input => {
         input.addEventListener('blur', (e) => {
             if (e.target.value) {
-                e.target.value = formatPhone(e.target.value);
+                e.target.value = e.target.value.trim();
             }
         });
     });
 });
 
-// Form validation on submit
+// MODIFICADO: Form validation on submit - Menos restrictivo
 function addFormValidation(formId) {
     const form = document.getElementById(formId);
     if (!form) return;
@@ -208,14 +141,15 @@ function addFormValidation(formId) {
             return false;
         }
         
-        // Specific validations
+        // MODIFICADO: Validaciones específicas más permisivas
         const ageField = form.querySelector('input[type="number"][id*="Age"]');
-        if (ageField && !validateAge(ageField.value)) {
+        if (ageField && ageField.value && !validateAge(ageField.value)) {
             e.preventDefault();
-            showFieldError(ageField, 'Edad debe estar entre 1 y 120 años');
+            showFieldError(ageField, 'Edad debe estar entre 1 y 150 años');
             return false;
         }
         
+        // Validación de fechas sigue igual (es razonable)
         const dateFields = form.querySelectorAll('input[type="date"]');
         dateFields.forEach(field => {
             if (field.value && !validateDate(field.value)) {

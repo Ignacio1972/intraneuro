@@ -335,3 +335,107 @@
         gap: 10px;
     }
 }
+/* Estilos para Escala de Rankin */
+.rankin-selector {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    align-items: center;
+}
+
+.rankin-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.circle {
+    font-size: 1.5rem;
+    color: var(--border-color);
+    cursor: pointer;
+    transition: color 0.3s ease;
+    user-select: none;
+}
+
+.circle:hover,
+.circle.active {
+    color: var(--primary-color);
+}
+
+.rankin-number {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Mejorar textarea de detalles adicionales */
+#dischargeDetails {
+    min-height: 100px;
+    resize: vertical;
+}
+
+#dischargePendingTasks {
+    min-height: 80px;
+    resize: vertical;
+}
+
+/* Espaciado mejorado para autorización */
+.discharge-form .form-group:last-of-type {
+    margin-bottom: 1.5rem;
+}
+
+/* Hacer el modal de paciente más ancho */
+.patient-modal-content {
+    width: 1200px;
+    padding: 0;
+}
+
+/* Arreglar alineación de datos de paciente */
+.patient-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.patient-info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    flex: 0 0 auto;
+    min-width: 120px;
+    text-align: left;
+}
+
+.info-value {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    flex: 1;
+    text-align: right;
+    word-wrap: break-word;
+}
+
+/* Para las filas en grid, mantener la alineación */
+.grid-info-row {
+    display: flex;
+    flex-direction: column;
+}
+
+.grid-info-row .patient-info-row {
+    margin: 0;
+    padding: 0.5rem 0;
+}
+
+/* Responsive para modal más ancho */
+@media (max-width: 1300px) {
+    .patient-modal-content {
+        width: 95%;
+        max-width: 1200px;
+    }
+}
