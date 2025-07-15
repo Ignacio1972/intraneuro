@@ -1,23 +1,4 @@
-// pacientes.js - INTRANEURO Patient Management
-
-// Mapping de códigos F a texto descriptivo
-const diagnosisMapping = {
-   'F32.1': 'Episodio depresivo moderado',
-   'F41.1': 'Trastorno de ansiedad generalizada',
-   'F20.0': 'Esquizofrenia paranoide',
-   'F31.1': 'Trastorno bipolar, episodio maníaco',
-   'F10.2': 'Dependencia del alcohol',
-   'F43.1': 'Trastorno de estrés post-traumático',
-   'F60.3': 'Trastorno límite de la personalidad',
-   'F84.0': 'Autismo infantil',
-   'F90.0': 'Trastorno por déficit de atención con hiperactividad',
-   'F50.0': 'Anorexia nerviosa'
-};
-
-// Función para obtener texto del diagnóstico
-function getDiagnosisText(code) {
-   return diagnosisMapping[code] || code;
-}
+// pacientes.js - INTRANEURO Patient Management (Orquestador Principal)
 
 // NUEVA FUNCIÓN: Cargar pacientes desde API con fallback
 async function loadPatientsFromAPI() {
@@ -66,69 +47,6 @@ async function renderPatients() {
    addPatientClickHandlers();
 }
 
-// Render patient card
-function renderPatientCard(patient) {
-   const initials = getInitials(patient.name);
-   const days = patient.daysInHospital;
-   const diagnosisText = getDiagnosisText(patient.diagnosis);
-   
-   return `
-       <div class="patient-card" data-patient-id="${patient.id}">
-           <div class="patient-header">
-               <div class="patient-avatar">${initials}</div>
-               <div class="patient-basic-info">
-                   <div class="patient-name">${patient.name}</div>
-                   <div class="patient-age">${patient.age} años</div>
-               </div>
-           </div>
-           <div class="stay-duration">
-               <span class="days">${days}</span> días
-           </div>
-           <div class="diagnosis-code">${diagnosisText}</div>
-           <div class="tooltip">${patient.diagnosisText}</div>
-       </div>
-   `;
-}
-
-// Render patient table (CORREGIDO - parámetro renombrado)
-function renderPatientTable(activePatients) {
-   return `
-       <table class="patients-table">
-           <thead>
-               <tr>
-                   <th>Nombre</th>
-                   <th>Edad</th>
-                   <th>Días</th>
-                   <th>Diagnóstico</th>
-                   <th>Ingresado</th>
-               </tr>
-           </thead>
-           <tbody>
-               ${activePatients.map(patient => `
-                   <tr data-patient-id="${patient.id}">
-                       <td>${patient.name}</td>
-                       <td>${patient.age} años</td>
-                       <td>${patient.daysInHospital}</td>
-                       <td>${getDiagnosisText(patient.diagnosis)}</td>
-                       <td>${formatDate(patient.admissionDate)}</td>
-                   </tr>
-               `).join('')}
-           </tbody>
-       </table>
-   `;
-}
-
-// Render empty state
-function renderEmptyState() {
-   return `
-       <div class="empty-state">
-           <div class="empty-state-icon">🏥</div>
-           <h3>No hay pacientes activos</h3>
-           <p>Haga clic en "Nuevo Ingreso" para registrar un paciente</p>
-       </div>
-   `;
-}
-
 // Add click handlers to patient elements
 function addPatientClickHandlers() {
    const patientElements = document.querySelectorAll('[data-patient-id]');
@@ -146,60 +64,9 @@ function openPatientModal(patientId) {
    const patient = patients.find(p => p.id === patientId);
    if (!patient) return;
    
-   // Fill admission data con layout eficiente y bien formateado
+   // Fill admission data
    const admissionData = document.getElementById('admissionData');
-   const diagnosisText = getDiagnosisText(patient.diagnosis);
-   
-   admissionData.innerHTML = `
-       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1rem;">
-           <div class="grid-info-row">
-               <div class="patient-info-row">
-                   <span class="info-label">Nombre:</span>
-                   <span class="info-value">${patient.name}</span>
-               </div>
-           </div>
-           <div class="grid-info-row">
-               <div class="patient-info-row">
-                   <span class="info-label">Edad:</span>
-                   <span class="info-value">${patient.age} años</span>
-               </div>
-           </div>
-       </div>
-       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1rem;">
-           <div class="grid-info-row">
-               <div class="patient-info-row">
-                   <span class="info-label">Teléfono:</span>
-                   <span class="info-value">${patient.phone || 'No registrado'}</span>
-               </div>
-           </div>
-           <div class="grid-info-row">
-               <div class="patient-info-row">
-                   <span class="info-label">RUT:</span>
-                   <span class="info-value">${patient.rut || 'Sin RUT'}</span>
-               </div>
-           </div>
-       </div>
-       <div class="patient-info-row">
-           <span class="info-label">Fecha Ingreso:</span>
-           <span class="info-value">${formatDate(patient.admissionDate)}</span>
-       </div>
-       <div class="patient-info-row">
-           <span class="info-label">Diagnóstico:</span>
-           <span class="info-value">${diagnosisText}</span>
-       </div>
-       <div class="patient-info-row">
-           <span class="info-label">Descripción:</span>
-           <span class="info-value">${patient.diagnosisDetails || 'presenta intenso dolor de cabeza'}</span>
-       </div>
-       <div class="patient-info-row">
-           <span class="info-label">Alergias:</span>
-           <span class="info-value">${patient.allergies || 'No presenta'}</span>
-       </div>
-       <div class="patient-info-row">
-           <span class="info-label">Ingresado por:</span>
-           <span class="info-value">${patient.admittedBy}</span>
-       </div>
-   `;
+   admissionData.innerHTML = renderAdmissionData(patient);
    
    // Fill discharge data
    const dischargeData = document.getElementById('dischargeData');
@@ -208,7 +75,7 @@ function openPatientModal(patientId) {
        dischargeData.innerHTML = renderDischargedData(patient);
    } else {
        // Active patient - show discharge form
-       dischargeData.innerHTML = renderDischargeForm(patient.id);
+       dischargeData.innerHTML = renderDischargeForm(patient.id, patient);
    }
    
    // Load timeline
@@ -221,18 +88,23 @@ function openPatientModal(patientId) {
    openModal('patientModal');
 }
 
-// Render discharge form con mejoras de layout
-function renderDischargeForm(patientId) {
+// Render discharge form - COMPLETAMENTE MODIFICADO
+function renderDischargeForm(patientId, patient) {
    return `
+       <!-- Toggle de Alta Programada -->
+       <div class="form-group" style="background: #f0f8ff; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+           <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+               <span style="font-weight: 600; color: #2c3e50;">Alta Programada para Hoy</span>
+               <label class="switch">
+                   <input type="checkbox" id="toggleScheduledDischarge" 
+                          ${patient.scheduledDischarge ? 'checked' : ''} 
+                          onchange="toggleScheduledDischarge(${patientId})">
+                   <span class="slider"></span>
+               </label>
+           </label>
+       </div>
+       
        <form id="dischargeForm" class="discharge-form" onsubmit="processDischarge(event, ${patientId})">
-           <div class="form-group">
-               <label>Fecha de Egreso:</label>
-               <div class="date-input-group">
-                   <input type="date" id="dischargeDate" required>
-                   <button type="button" class="btn-today" onclick="setToday('dischargeDate')">HOY</button>
-               </div>
-           </div>
-           
            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 1rem;">
                <div class="form-group">
                    <label>Escala de Rankin:</label>
@@ -258,14 +130,9 @@ function renderDischargeForm(patientId) {
            <div class="form-group">
                <label>Diagnóstico de Egreso:</label>
                <select id="dischargeDiagnosis" required>
-                   <option value="">Seleccione...</option>
-                   <option value="alta">Alta médica</option>
-                   <option value="F32.1">Episodio depresivo moderado</option>
-                   <option value="F41.1">Trastorno de ansiedad generalizada</option>
-                   <option value="F20.0">Esquizofrenia paranoide</option>
-                   <option value="F31.1">Trastorno bipolar</option>
-                   <option value="F10.2">Dependencia del alcohol</option>
-                   <option value="other">Otro...</option>
+                   ${catalogos.dischargeOptions.map(opt => 
+                       `<option value="${opt.value}">${opt.text}</option>`
+                   ).join('')}
                </select>
            </div>
            
@@ -274,54 +141,15 @@ function renderDischargeForm(patientId) {
                <textarea id="dischargeDetails" placeholder="Detalles adicionales del diagnóstico de egreso..." rows="4"></textarea>
            </div>
            
-           <div class="form-group">
-               <label>Pendientes:</label>
-               <textarea id="dischargePendingTasks" placeholder="Tareas o procedimientos pendientes para el egreso..." rows="3"></textarea>
-           </div>
-           
            <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 1.5rem;">
                <div class="form-group">
                    <label>Autorizado por:</label>
-                   <input type="text" id="authorizedBy" required>
-               </div>
-               <div class="form-group">
-                   <label>Contraseña:</label>
-                   <input type="password" id="dischargePassword" required>
+                   <input type="text" id="authorizedBy" placeholder="Nombre completo del doctor" required>
                </div>
            </div>
            
            <button type="submit" class="btn btn-primary">PROCESAR EGRESO</button>
        </form>
-   `;
-}
-
-// Render discharged data
-function renderDischargedData(patient) {
-   const circles = Array.from({length: 7}, (_, i) => 
-       i <= patient.ranking ? '●' : '○'
-   ).join(' ');
-   
-   return `
-       <div class="patient-info-row">
-           <span class="info-label">Fecha Egreso:</span>
-           <span class="info-value">${formatDate(patient.dischargeDate)}</span>
-       </div>
-       <div class="patient-info-row">
-           <span class="info-label">Escala de Rankin:</span>
-           <span class="info-value">${circles} (${patient.ranking})</span>
-       </div>
-       <div class="patient-info-row">
-           <span class="info-label">Diagnóstico Egreso:</span>
-           <span class="info-value">${patient.dischargeDiagnosis}</span>
-       </div>
-       <div class="patient-info-row">
-           <span class="info-label">Autorizado por:</span>
-           <span class="info-value">${patient.dischargedBy}</span>
-       </div>
-       <div class="patient-info-row">
-           <span class="info-label">Estado:</span>
-           <span class="info-value">${patient.deceased ? '✝️ Fallecido' : 'Egresado'}</span>
-       </div>
    `;
 }
 
@@ -342,54 +170,100 @@ function setRating(rating) {
    });
 }
 
-// MODIFICADA: Process discharge para usar API
+// NUEVA FUNCIÓN: Toggle de alta programada
+async function toggleScheduledDischarge(patientId) {
+    const isChecked = document.getElementById('toggleScheduledDischarge').checked;
+    
+    try {
+        await apiRequest(`/admissions/${patientId}/discharge`, {
+            method: 'PUT',
+            body: JSON.stringify({ 
+                scheduledDischarge: isChecked
+            })
+        });
+        
+        // Actualizar dashboard inmediatamente
+        updateDashboard();
+        
+        // Mostrar notificación toast
+        showToast(
+            isChecked ? catalogos.messages.scheduledSuccess : catalogos.messages.scheduledRemoved
+        );
+        
+    } catch (error) {
+        console.log('Error actualizando alta programada:', error);
+        
+        // Fallback local
+        const patient = patients.find(p => p.id === patientId);
+        if (patient) {
+            patient.scheduledDischarge = isChecked;
+            updateDashboard();
+            showToast(
+                isChecked ? catalogos.messages.scheduledSuccess : catalogos.messages.scheduledRemoved
+            );
+        } else {
+            // Revertir el toggle si falló
+            document.getElementById('toggleScheduledDischarge').checked = !isChecked;
+            showToast(catalogos.messages.errorGeneric, 'error');
+        }
+    }
+}
+
+// MODIFICADA: Process discharge simplificado
 async function processDischarge(event, patientId) {
    event.preventDefault();
    
-   const authorizedBy = document.getElementById('authorizedBy').value;
-   const password = document.getElementById('dischargePassword').value;
+   const authorizedBy = document.getElementById('authorizedBy').value.trim();
    
-   // Validate authorization
-   if (!validateAuthorization(authorizedBy, password)) {
-       alert('Contraseña incorrecta para el usuario especificado');
+   // Validación simple - solo nombre requerido
+   if (!authorizedBy) {
+       showToast(catalogos.messages.errorAuth, 'error');
        return;
    }
    
-   // Get form data
+   // Get form data - SIN fecha manual, SIN pendientes, SIN contraseña
    const dischargeData = {
-       dischargeDate: document.getElementById('dischargeDate').value,
+       dischargeDate: new Date().toISOString(), // Fecha automática del servidor
+       scheduledDischarge: false, // El egreso cancela la alta programada
        ranking: parseInt(document.getElementById('patientRanking').value),
        dischargeDiagnosis: document.getElementById('dischargeDiagnosis').value,
        dischargeDetails: document.getElementById('dischargeDetails').value,
-       dischargePendingTasks: document.getElementById('dischargePendingTasks').value,
        deceased: document.getElementById('patientDeceased').checked,
        dischargedBy: authorizedBy
    };
    
    try {
-       // TODO: Implementar llamada a API cuando esté el endpoint
-       // const response = await apiRequest(`/admissions/${patientId}/discharge`, {
-       //     method: 'PUT',
-       //     body: JSON.stringify(dischargeData)
-       // });
+       // Intentar llamada a API
+       const response = await apiRequest(`/admissions/${patientId}/discharge`, {
+           method: 'PUT',
+           body: JSON.stringify(dischargeData)
+       });
        
-       // Por ahora, usar lógica local
+       // Show success message
+       showToast(catalogos.messages.dischargeSuccess);
+       
+       // Close modal and refresh
+       closeModal('patientModal');
+       updateDashboard();
+       renderPatients();
+       
+   } catch (error) {
+       console.log('API falló, usando fallback local:', error);
+       
+       // Fallback: usar lógica local
        const patient = patients.find(p => p.id === patientId);
        if (patient) {
            Object.assign(patient, dischargeData);
            patient.status = 'discharged';
            
            // Show success message
-           alert('Egreso procesado correctamente');
+           showToast(catalogos.messages.dischargeSuccess);
            
            // Close modal and refresh
            closeModal('patientModal');
-           updateDashboard(); // CRÍTICO: Actualizar dashboard después del egreso
+           updateDashboard();
            renderPatients();
        }
-   } catch (error) {
-       console.error('Error procesando egreso:', error);
-       alert('Error al procesar el egreso. Intente nuevamente.');
    }
 }
 
@@ -416,14 +290,14 @@ function loadPatientObservations(patientId) {
 
 // Edit patient data
 function editPatientData(patientId) {
-   alert('Función de edición en desarrollo');
+   showToast('Función de edición en desarrollo', 'error');
 }
 
 // MANTENER FUNCIONES QUE PODRÍAN SER LLAMADAS DESDE OTROS ARCHIVOS
 function saveObservations() {
-   alert('Observaciones guardadas');
+   showToast('Observaciones guardadas');
 }
 
 function savePendingTasks() {
-   alert('Pendientes guardados');
+   showToast('Pendientes guardados');
 }
