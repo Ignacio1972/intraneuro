@@ -35,16 +35,26 @@ async function apiRequest(endpoint, options = {}) {
             ...options,
             headers: {
                 ...API_CONFIG.getHeaders(),
-                ...options.headers
+                ...options.headers,
+                // AGREGAR HEADERS ANTI-CACHÉ
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache'
             }
         };
+        
+        // AGREGAR timestamp a las peticiones GET para evitar caché
+        let url = `${API_CONFIG.baseURL}${endpoint}`;
+        if (!options.method || options.method === 'GET') {
+            const separator = endpoint.includes('?') ? '&' : '?';
+            url += `${separator}_t=${Date.now()}`;
+        }
         
         // Agregar timeout
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.timeout);
         config.signal = controller.signal;
         
-        const response = await fetch(`${API_CONFIG.baseURL}${endpoint}`, config);
+        const response = await fetch(url, config); // Usar URL modificada
         clearTimeout(timeoutId);
         
         // Manejar errores HTTP
@@ -53,9 +63,9 @@ async function apiRequest(endpoint, options = {}) {
                 // Token expirado - limpiar y recargar
                 API_CONFIG.removeToken();
                 sessionStorage.removeItem('currentUser');
-               console.error('TOKEN EXPIRADO - Endpoint:', endpoint);
-               console.error('Response:', response);
-// window.location.reload();
+                console.error('TOKEN EXPIRADO - Endpoint:', endpoint);
+                console.error('Response:', response);
+                // window.location.reload();
                 return;
             }
             
@@ -85,8 +95,12 @@ async function apiRequest(endpoint, options = {}) {
 // Función para verificar si la API está disponible
 async function checkAPIStatus() {
     try {
-        const response = await fetch(`${API_CONFIG.baseURL}/health`, { 
+        const response = await fetch(`${API_CONFIG.baseURL}/health?_t=${Date.now()}`, { 
             method: 'GET',
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            },
             signal: AbortSignal.timeout(5000)
         });
         
@@ -130,12 +144,27 @@ async function apiRequestWithFallback(endpoint, options, fallbackFunction) {
     }
 }
 
+// Función para forzar recarga sin caché
+async function forceRefresh(endpoint, options = {}) {
+    // Forzar nueva petición ignorando cualquier caché
+    return await apiRequest(endpoint, {
+        ...options,
+        headers: {
+            ...options.headers,
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        }
+    });
+}
+
 // Exportar para debugging en consola
 window.API_DEBUG = {
     config: API_CONFIG,
     status: () => apiAvailable,
     checkStatus: checkAPIStatus,
-    request: apiRequest
+    request: apiRequest,
+    forceRefresh: forceRefresh
 };
 
-console.log('✅ API Helper cargado correctamente');
+console.log('✅ API Helper cargado correctamente - v2.0 con anti-caché');

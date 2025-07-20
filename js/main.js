@@ -142,14 +142,9 @@ function updateDashboard() {
         countElement.textContent = activePatients.length;
     }
     
-    // Calculate scheduled discharges for tomorrow (RESTAURADO - dinámico)
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
-    
+    // Calculate scheduled discharges (CORREGIDO - busca scheduledDischarge)
     const scheduledDischarges = activePatients.filter(patient => {
-        // Si el paciente tiene una fecha esperada de alta
-        return patient.expectedDischargeDate === tomorrowStr;
+        return patient.scheduledDischarge === true;
     }).length;
     
     document.getElementById("avgStay").textContent = scheduledDischarges;
@@ -237,7 +232,7 @@ function loadMockData() {
             admittedBy: 'Dr. María Silva',
             status: 'active',
             daysInHospital: calculateDays('2024-12-28'),
-            expectedDischargeDate: null // Para altas programadas
+            scheduledDischarge: false // CORREGIDO: cambié expectedDischargeDate por scheduledDischarge
         },
         {
             id: 2,
@@ -253,7 +248,7 @@ function loadMockData() {
             admittedBy: 'Dr. Carlos Mendoza',
             status: 'active',
             daysInHospital: calculateDays('2025-01-08'),
-            expectedDischargeDate: null
+            scheduledDischarge: false // CORREGIDO
         },
         {
             id: 3,
@@ -269,7 +264,7 @@ function loadMockData() {
             admittedBy: 'Dr. Ana Rodríguez',
             status: 'active',
             daysInHospital: calculateDays('2024-12-16'),
-            expectedDischargeDate: null
+            scheduledDischarge: false // CORREGIDO
         }
     ];
 }

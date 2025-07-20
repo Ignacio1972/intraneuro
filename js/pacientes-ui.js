@@ -77,6 +77,12 @@ function renderEmptyState() {
 function renderAdmissionData(patient) {
     const diagnosisText = catalogos.getDiagnosisText(patient.diagnosis);
     
+    // Cargar observaciones y tareas al abrir el modal
+    setTimeout(() => {
+        loadObservationHistory(patient.id);
+        loadTaskHistory(patient.id);
+    }, 100);
+    
     return `
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1rem;">
             <div class="grid-info-row">
@@ -125,6 +131,40 @@ function renderAdmissionData(patient) {
         <div class="patient-info-row">
             <span class="info-label">Ingresado por:</span>
             <span class="info-value">${patient.admittedBy}</span>
+        </div>
+        
+        <!-- NUEVA SECCIÓN: Historia y Pendientes -->
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--border-color);">
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">
+                    Historia:
+                </label>
+                <textarea 
+                    id="patientObservations" 
+                    style="width: 100%; min-height: 120px; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 4px; resize: vertical;"
+                    placeholder="Historia clínica del paciente..."
+                >${patient.observations || ''}</textarea>
+                <div id="observationHistory" style="margin-top: 0.5rem; font-size: 0.85em; color: var(--text-secondary);"></div>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">
+                    Pendientes:
+                </label>
+                <textarea 
+                    id="patientPendingTasks" 
+                    style="width: 100%; min-height: 120px; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 4px; resize: vertical;"
+                    placeholder="Tareas o procedimientos pendientes..."
+                >${patient.pendingTasks || ''}</textarea>
+                <div id="taskHistory" style="margin-top: 0.5rem; font-size: 0.85em; color: var(--text-secondary);"></div>
+            </div>
+            
+            <button 
+                class="btn btn-primary" 
+                onclick="saveObservationsAndTasks(${patient.id})"
+                style="width: 60%;">
+                Guardar
+            </button>
         </div>
     `;
 }
@@ -186,4 +226,64 @@ function showToast(message, type = 'success') {
         toast.classList.remove('show');
         setTimeout(() => toast.remove(), 300);
     }, 3000);
+}
+
+// Cargar historial de observaciones
+async function loadObservationHistory(patientId) {
+    try {
+        const observations = await apiRequest(`/patients/${patientId}/admission/observations`);
+        if (observations.length > 0) {
+            const latest = observations[0];
+            document.getElementById('patientObservations').value = latest.observation;
+            
+            // Mostrar información de la última actualización
+            const historyDiv = document.getElementById('observationHistory');
+            if (historyDiv) {
+                const date = new Date(latest.created_at);
+                historyDiv.innerHTML = `Última actualización: ${date.toLocaleDateString('es-CL')} por ${latest.created_by}`;
+            }
+        }
+    } catch (error) {
+        console.log('Usando datos locales para observaciones');
+    }
+}
+
+// Cargar historial de tareas
+async function loadTaskHistory(patientId) {
+    try {
+        const tasks = await apiRequest(`/patients/${patientId}/admission/tasks`);
+        if (tasks.length > 0) {
+            const latest = tasks[0];
+            document.getElementById('patientPendingTasks').value = latest.task;
+            
+            // Mostrar información de la última actualización
+            const historyDiv = document.getElementById('taskHistory');
+            if (historyDiv) {
+                const date = new Date(latest.created_at);
+                historyDiv.innerHTML = `Última actualización: ${date.toLocaleDateString('es-CL')} por ${latest.created_by}`;
+            }
+        }
+    } catch (error) {
+        console.log('Usando datos locales para tareas');
+    }
+}
+
+// Función helper para obtener iniciales
+function getInitials(name) {
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+        return parts[0][0].toUpperCase() + parts[1][0].toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+}
+
+// Función helper para formatear fecha
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-CL', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
 }

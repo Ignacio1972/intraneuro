@@ -1,15 +1,19 @@
 // pacientes.js - INTRANEURO Patient Management (Orquestador Principal)
 
 // NUEVA FUNCIÓN: Cargar pacientes desde API con fallback
+// En /var/www/intraneuro/js/pacientes.js
+// Modifica la función loadPatientsFromAPI:
+
 async function loadPatientsFromAPI() {
    try {
-       // Intentar cargar desde API
-       const response = await apiRequest('/patients/active');
+       // AGREGAR timestamp para evitar caché
+       const timestamp = Date.now();
+       const response = await apiRequest(`/patients/active?_t=${timestamp}`);
        
        if (Array.isArray(response)) {
            // Usar datos de la API
            patients = response;
-           console.log('Pacientes cargados desde API');
+           console.log('Pacientes cargados desde API:', patients.length);
            return true;
        } else {
            throw new Error('Respuesta inválida de API');
@@ -17,7 +21,6 @@ async function loadPatientsFromAPI() {
    } catch (error) {
        // Fallback silencioso a datos locales
        console.log('Usando datos locales de pacientes:', error.message);
-       // Los datos ya están en el array global 'patients' desde main.js
        return false;
    }
 }
@@ -77,12 +80,6 @@ function openPatientModal(patientId) {
        // Active patient - show discharge form
        dischargeData.innerHTML = renderDischargeForm(patient.id, patient);
    }
-   
-   // Load timeline
-   loadPatientTimeline(patient.id);
-   
-   // Load observations (MANTENER PARA NO ROMPER)
-   loadPatientObservations(patient.id);
    
    // Open modal
    openModal('patientModal');
@@ -170,20 +167,35 @@ function setRating(rating) {
    });
 }
 
-// NUEVA FUNCIÓN: Toggle de alta programada
+// NUEVA FUNCIÓN: Toggle de alta programada - CORREGIDA
 async function toggleScheduledDischarge(patientId) {
     const isChecked = document.getElementById('toggleScheduledDischarge').checked;
     
+    console.log(`[TOGGLE] Patient ${patientId}: ${isChecked ? 'Activando' : 'Desactivando'} alta programada`);
+    
     try {
-        await apiRequest(`/admissions/${patientId}/discharge`, {
+        // CAMBIO: usar /patients en lugar de /admissions
+        const response = await apiRequest(`/patients/${patientId}/discharge`, {
             method: 'PUT',
             body: JSON.stringify({ 
                 scheduledDischarge: isChecked
             })
         });
         
+        console.log(`[TOGGLE] Respuesta API:`, response);
+        
+        // Actualizar el paciente en el array local
+        const patient = patients.find(p => p.id === patientId);
+        if (patient) {
+            patient.scheduledDischarge = isChecked;
+            console.log(`[TOGGLE] Array local actualizado`);
+        }
+        
         // Actualizar dashboard inmediatamente
         updateDashboard();
+        
+        // Actualizar badges inmediatamente
+        renderPatients();
         
         // Mostrar notificación toast
         showToast(
@@ -191,13 +203,14 @@ async function toggleScheduledDischarge(patientId) {
         );
         
     } catch (error) {
-        console.log('Error actualizando alta programada:', error);
+        console.error('[TOGGLE] Error actualizando alta programada:', error);
         
         // Fallback local
         const patient = patients.find(p => p.id === patientId);
         if (patient) {
             patient.scheduledDischarge = isChecked;
             updateDashboard();
+            renderPatients();
             showToast(
                 isChecked ? catalogos.messages.scheduledSuccess : catalogos.messages.scheduledRemoved
             );
@@ -234,7 +247,7 @@ async function processDischarge(event, patientId) {
    
    try {
        // Intentar llamada a API
-       const response = await apiRequest(`/admissions/${patientId}/discharge`, {
+       const response = await apiRequest(`/patients/${patientId}/discharge`, {
            method: 'PUT',
            body: JSON.stringify(dischargeData)
        });
@@ -267,30 +280,61 @@ async function processDischarge(event, patientId) {
    }
 }
 
-// Load patient timeline
-function loadPatientTimeline(patientId) {
-   const timeline = document.getElementById('patientTimeline');
-   // Mock timeline data
-   timeline.innerHTML = `
-       <h3>Historial</h3>
-       <div class="timeline-item">
-           <span class="timeline-date">${formatDate(new Date())}</span>
-           <span class="timeline-event">Ingreso registrado</span>
-       </div>
-   `;
-}
-
-// Load patient observations (MANTENER PARA NO ROMPER)
-function loadPatientObservations(patientId) {
-   const observations = document.getElementById('patientObservations');
-   if (observations) {
-       observations.value = '';
-   }
-}
-
 // Edit patient data
 function editPatientData(patientId) {
    showToast('Función de edición en desarrollo', 'error');
+}
+
+// NUEVA FUNCIÓN: Guardar observaciones y pendientes juntos
+// REEMPLAZAR la función saveObservationsAndTasks completa
+async function saveObservationsAndTasks(patientId) {
+    const observations = document.getElementById('patientObservations').value;
+    const pendingTasks = document.getElementById('patientPendingTasks').value;
+    
+    try {
+        // Usar patientId directamente ya que el backend lo maneja
+        if (observations.trim()) {
+            await apiRequest(`/patients/${patientId}/admission/observations`, {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    observation: observations,
+                    created_by: currentUser
+                })
+            });
+        }
+        
+        if (pendingTasks.trim()) {
+            await apiRequest(`/patients/${patientId}/admission/tasks`, {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    task: pendingTasks,
+                    created_by: currentUser
+                })
+            });
+        }
+        
+        // Actualizar array local
+        const patient = patients.find(p => p.id === patientId);
+        if (patient) {
+            patient.observations = observations;
+            patient.pendingTasks = pendingTasks;
+        }
+        
+        showToast('Información guardada correctamente');
+        
+    } catch (error) {
+        console.error('Error guardando información:', error);
+        
+        // Fallback local
+        const patient = patients.find(p => p.id === patientId);
+        if (patient) {
+            patient.observations = observations;
+            patient.pendingTasks = pendingTasks;
+            showToast('Información guardada localmente');
+        } else {
+            showToast('Error al guardar', 'error');
+        }
+    }
 }
 
 // MANTENER FUNCIONES QUE PODRÍAN SER LLAMADAS DESDE OTROS ARCHIVOS
