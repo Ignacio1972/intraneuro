@@ -1,0 +1,462 @@
+/* ficha-archivo.css - Estilos para la ficha de paciente archivado */
+
+/* Variables */
+:root {
+    --primary-color: #3498db;
+    --secondary-color: #2c3e50;
+    --success-color: #27ae60;
+    --danger-color: #e74c3c;
+    --warning-color: #f39c12;
+    --light-bg: #f8f9fa;
+    --border-color: #dee2e6;
+    --text-muted: #6c757d;
+    --shadow: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-hover: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Layout Principal */
+.ficha-header {
+    background: white;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 0;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.header-left h1 {
+    font-size: 1.5rem;
+    margin: 0;
+    color: var(--secondary-color);
+}
+
+.patient-header-info {
+    margin-top: 0.5rem;
+}
+
+.patient-name-header {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.ficha-main {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 20px;
+}
+
+/* Secciones */
+.ficha-section {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--light-bg);
+}
+
+.section-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--secondary-color);
+}
+
+/* Datos del Paciente */
+.patient-data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.data-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.data-item label {
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.data-value {
+    font-size: 1rem;
+    color: var(--secondary-color);
+}
+
+/* Modo Edición */
+.form-control {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.edit-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+/* Admisiones */
+.admission-count {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.admissions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.admission-card {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    background: var(--light-bg);
+    transition: all 0.3s;
+}
+
+.admission-card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+}
+
+.admission-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.admission-header h3 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.admission-duration {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+}
+
+.admission-content {
+    display: grid;
+    gap: 1rem;
+}
+
+.admission-dates {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 4px;
+}
+
+.date-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.date-item label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.admission-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.detail-item label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.diagnosis-code {
+    font-weight: 600;
+    color: var(--secondary-color);
+    margin-right: 0.5rem;
+}
+
+.diagnosis-text {
+    color: var(--secondary-color);
+}
+
+/* Escala de Rankin */
+.rankin-score {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.rankin-0, .rankin-1 { background: #d4edda; color: #155724; }
+.rankin-2, .rankin-3 { background: #fff3cd; color: #856404; }
+.rankin-4, .rankin-5 { background: #f8d7da; color: #721c24; }
+.rankin-6 { background: #6c757d; color: white; }
+
+.admission-actions {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Observaciones */
+.observations-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.observations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.observation-item {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 1rem;
+}
+
+.observation-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.observation-text {
+    color: var(--secondary-color);
+    line-height: 1.5;
+}
+
+/* Botones */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2980b9;
+}
+
+.btn-secondary {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #34495e;
+}
+
+.btn-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.btn-success:hover {
+    background: #229954;
+}
+
+.btn-small {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+}
+
+/* Loading */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Toast */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    border-radius: 4px;
+    color: white;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s;
+    z-index: 1000;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast.success { background: var(--success-color); }
+.toast.error { background: var(--danger-color); }
+.toast.info { background: var(--primary-color); }
+
+/* No data */
+.no-data {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 2rem;
+    font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .header-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .patient-data-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .admission-dates {
+        grid-template-columns: 1fr;
+    }
+    
+    .admission-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}
+
+/* Impresión */
+@media print {
+    .header-actions,
+    .btn,
+    .edit-actions,
+    .admission-actions,
+    .observations-header button,
+    .loading-overlay,
+    .toast {
+        display: none !important;
+    }
+    
+    .ficha-header {
+        position: static;
+        border-bottom: 2px solid black;
+        margin-bottom: 20px;
+    }
+    
+    .ficha-section {
+        box-shadow: none;
+        border: 1px solid #000;
+        page-break-inside: avoid;
+    }
+    
+    .admission-card {
+        page-break-inside: avoid;
+        border: 1px solid #000;
+        margin-bottom: 10px;
+    }
+    
+    body {
+        font-size: 12pt;
+    }
+    
+    @page {
+        margin: 2cm;
+    }
+}

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INTRANEURO - Archivo de Pacientes</title>
+    
+    <!-- Reusar CSS existentes -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/modal.css">
+    <link rel="stylesheet" href="css/pacientes.css">
+    
+    <!-- CSS específico si necesario -->
+    <link rel="stylesheet" href="css/archivos.css">
+</head>
+<body>
+    <!-- Header con navegación -->
+    <header class="main-header">
+        <div class="header-content">
+            <h1>📁 Archivo de Pacientes Egresados</h1>
+            <nav class="header-nav">
+                <a href="index.html" class="btn btn-secondary">← Volver al Sistema</a>
+                <span id="currentUser" class="user-info"></span>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main id="archivosMain" class="main-content">
+        <!-- Barra de búsqueda y acciones -->
+        <section class="search-section">
+            <div class="search-container">
+                <input type="text" id="searchArchivos" placeholder="Buscar por nombre, apellido o RUT..." class="search-input">
+                <input type="date" id="filterDate" class="date-filter">
+                <button onclick="searchArchivos()" class="btn btn-primary">Buscar</button>
+                <button onclick="exportToExcel()" class="btn btn-secondary">
+                    📊 Exportar a Excel
+                </button>
+            </div>
+            <p class="info-text">Mostrando los últimos 25 pacientes dados de alta</p>
+        </section>
+
+        <!-- Contenedor de pacientes archivados -->
+        <section id="archivosContainer" class="patients-container">
+            <!-- Se llenará dinámicamente -->
+            <div class="loading">Cargando archivos...</div>
+        </section>
+    </main>
+
+    <!-- Modal para ver detalles del paciente archivado -->
+    <div id="archivedPatientModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="modalPatientName">Ficha del Paciente</h2>
+                <button class="close-btn" onclick="closeArchivedModal()">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Tabs para navegación -->
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="showTab('datos')">Datos Personales</button>
+                    <button class="tab-btn" onclick="showTab('admisiones')">Historial de Admisiones</button>
+                    <button class="tab-btn" onclick="showTab('observaciones')">Observaciones</button>
+                </div>
+                
+                <!-- Tab: Datos Personales -->
+                <div id="tab-datos" class="tab-content active">
+                    <div class="patient-info-grid">
+                        <div class="info-item">
+                            <label>Nombre:</label>
+                            <span id="modalName"></span>
+                        </div>
+                        <div class="info-item">
+                            <label>RUT:</label>
+                            <span id="modalRut"></span>
+                        </div>
+                        <div class="info-item">
+                            <label>Edad:</label>
+                            <span id="modalAge"></span>
+                        </div>
+                        <div class="info-item">
+                            <label>Teléfono:</label>
+                            <span id="modalPhone"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tab: Historial de Admisiones -->
+                <div id="tab-admisiones" class="tab-content" style="display: none;">
+                    <div id="admissionsHistory">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                </div>
+                
+                <!-- Tab: Observaciones -->
+                <div id="tab-observaciones" class="tab-content" style="display: none;">
+                    <div id="observationsHistory">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button onclick="editPatientData()" class="btn btn-secondary">Editar Datos</button>
+                <button onclick="closeArchivedModal()" class="btn btn-secondary">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script src="js/api.js"></script>
+    <script src="js/data-catalogos.js"></script>
+    <script src="js/validaciones.js"></script>
+    <script src="js/archivos.js"></script>
+</body>
+</html>

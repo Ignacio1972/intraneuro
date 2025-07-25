@@ -34,4 +34,12 @@ const Patient = sequelize.define('Patient', {
     underscored: true
 });
 
+// Definir asociaciones
+Patient.associate = (models) => {
+    Patient.hasMany(models.Admission, {
+        foreignKey: 'patient_id',
+        as: 'Admissions'
+    });
+};
+
 module.exports = Patient;

@@ -345,3 +345,332 @@ function saveObservations() {
 function savePendingTasks() {
    showToast('Pendientes guardados');
 }
+
+// Función para exportar pacientes activos a Excel - VERSIÓN FINAL CORREGIDA
+async function exportActivePatientsToExcel() {
+    // Verificar que hay datos
+    if (!patients || patients.length === 0) {
+        showToast('No hay pacientes activos para exportar', 'warning');
+        return;
+    }
+    
+    showToast('Preparando exportación...', 'success');
+    
+    try {
+        // Crear libro de Excel
+        const wb = XLSX.utils.book_new();
+        
+        // Preparar datos para Excel
+        const excelData = [
+            ['LISTADO DE PACIENTES ACTIVOS - INTRANEURO'],
+            ['Fecha de generación:', new Date().toLocaleString('es-CL')],
+            [''],
+            ['Fecha Ingreso', 'Nombre Paciente', 'Edad', 'Alergias', 'Diagnóstico', 'Descripción', 'Historia', 'Pendientes', 'Estado', 'Días Hospitalizados']
+        ];
+        
+        // Cargar datos completos de cada paciente
+        for (const patient of patients) {
+            const daysInHospital = patient.admissionDate 
+                ? Math.ceil((new Date() - new Date(patient.admissionDate)) / (1000 * 60 * 60 * 24))
+                : 0;
+            
+            // Cargar observaciones usando ID del paciente (CORREGIDO)
+            let historia = 'Sin observaciones';
+            if (patient.id) {
+                try {
+                    const obsResponse = await apiRequest(`/patients/${patient.id}/admission/observations`);
+                    
+                    if (obsResponse && obsResponse.length > 0) {
+                        historia = obsResponse.map(obs => {
+                            // Usar createdAt (formato correcto)
+                            let fecha = 'Sin fecha';
+                            if (obs.createdAt) {
+                                try {
+                                    fecha = new Date(obs.createdAt).toLocaleDateString('es-CL');
+                                } catch (e) {
+                                    fecha = 'Fecha inválida';
+                                }
+                            }
+                            
+                            // Formatear observación con saltos de línea si es muy larga
+                            const texto = obs.observation || 'Sin texto';
+                            const textoFormateado = texto.length > 80 
+                                ? texto.match(/.{1,80}/g).join('\n    ') 
+                                : texto;
+                            
+                            return `[${fecha}] ${textoFormateado}`;
+                        }).join('\n\n'); // Doble salto entre observaciones
+                    }
+                } catch (error) {
+                    console.error(`Error cargando observaciones de ${patient.name}:`, error);
+                }
+            }
+            
+            // Cargar pendientes usando ID del paciente (CORREGIDO)
+            let pendientes = 'Sin pendientes';
+            if (patient.id) {
+                try {
+                    const tasksResponse = await apiRequest(`/patients/${patient.id}/admission/tasks`);
+                    
+                    if (tasksResponse && Array.isArray(tasksResponse) && tasksResponse.length > 0) {
+                        pendientes = tasksResponse.map((task, index) => {
+                            const texto = task.task || task.text || task.descripcion || task;
+                            return `${index + 1}. ${texto}`;
+                        }).join('\n');
+                    }
+                } catch (error) {
+                    // Si es 404, es normal - no hay tareas
+                    if (error.message && error.message.includes('404')) {
+                        pendientes = 'Sin pendientes';
+                    } else {
+                        console.error(`Error inesperado cargando pendientes:`, error);
+                    }
+                }
+            }
+            
+            // Estado del paciente
+            const estado = patient.scheduledDischarge ? 'ALTA PROGRAMADA' : 'Activo';
+            
+            // Diagnóstico con saltos de línea si es largo
+            const diagnosticoCodigo = patient.diagnosis || '';
+            const diagnosticoTexto = patient.diagnosisText || '';
+            const diagnosticoCompleto = `${diagnosticoCodigo} - ${diagnosticoTexto}`;
+            const diagnosticoFormateado = diagnosticoCompleto.length > 50 
+                ? diagnosticoCompleto.match(/.{1,50}/g).join('\n') 
+                : diagnosticoCompleto;
+            
+            // Descripción con saltos de línea si es larga
+            const descripcion = patient.diagnosisDetails || '';
+            const descripcionFormateada = descripcion.length > 80 
+                ? descripcion.match(/.{1,80}/g).join('\n') 
+                : descripcion || '-';
+            
+            excelData.push([
+                formatDate(patient.admissionDate) || '-',
+                patient.name || '-',
+                patient.age || '-',
+                patient.allergies || 'Sin alergias',
+                diagnosticoFormateado,
+                descripcionFormateada,
+                historia,
+                pendientes,
+                estado,
+                daysInHospital
+            ]);
+        }
+        
+        // Agregar resumen
+        excelData.push([]);
+        excelData.push(['RESUMEN']);
+        excelData.push(['Total de pacientes activos:', patients.length]);
+        
+        const scheduledDischarges = patients.filter(p => p.scheduledDischarge).length;
+        excelData.push(['Altas programadas para hoy:', scheduledDischarges]);
+        
+        const totalDays = patients.reduce((sum, patient) => {
+            if (patient.admissionDate) {
+                return sum + Math.ceil((new Date() - new Date(patient.admissionDate)) / (1000 * 60 * 60 * 24));
+            }
+            return sum;
+        }, 0);
+        const avgDays = patients.length > 0 ? Math.round(totalDays / patients.length) : 0;
+        excelData.push(['Promedio días hospitalizado:', avgDays]);
+        
+        // Crear hoja
+        const ws = XLSX.utils.aoa_to_sheet(excelData);
+        
+        // Ajustar anchos
+        ws['!cols'] = [
+            { wch: 15 }, // Fecha Ingreso
+            { wch: 30 }, // Nombre
+            { wch: 8 },  // Edad
+            { wch: 25 }, // Alergias
+            { wch: 35 }, // Diagnóstico
+            { wch: 45 }, // Descripción
+            { wch: 60 }, // Historia
+            { wch: 40 }, // Pendientes
+            { wch: 20 }, // Estado
+            { wch: 18 }  // Días Hospitalizados
+        ];
+        
+        // Combinar celdas del título
+        ws['!merges'] = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: 9 } },
+            { s: { r: 1, c: 0 }, e: { r: 1, c: 9 } }
+        ];
+        
+        XLSX.utils.book_append_sheet(wb, ws, 'Pacientes Activos');
+        
+        // HOJA 2: Pacientes con Alta Programada (si hay)
+        const scheduledPatients = patients.filter(p => p.scheduledDischarge);
+        if (scheduledPatients.length > 0) {
+            const altasData = [
+                ['PACIENTES CON ALTA PROGRAMADA PARA HOY'],
+                [''],
+                ['Fecha Ingreso', 'Nombre', 'Edad', 'Diagnóstico', 'Días Hospitalizado', 'Médico Tratante']
+            ];
+            
+            scheduledPatients.forEach(patient => {
+                const days = patient.admissionDate 
+                    ? Math.ceil((new Date() - new Date(patient.admissionDate)) / (1000 * 60 * 60 * 24))
+                    : 0;
+                
+                altasData.push([
+                    formatDate(patient.admissionDate),
+                    patient.name,
+                    patient.age,
+                    `${patient.diagnosis} - ${patient.diagnosisText}`,
+                    days,
+                    patient.admittedBy || '-'
+                ]);
+            });
+            
+            const ws2 = XLSX.utils.aoa_to_sheet(altasData);
+            ws2['!cols'] = [
+                { wch: 15 },
+                { wch: 30 },
+                { wch: 8 },
+                { wch: 50 },
+                { wch: 15 },
+                { wch: 25 }
+            ];
+            
+            XLSX.utils.book_append_sheet(wb, ws2, 'Altas Programadas');
+        }
+        
+        // Generar archivo
+        const fileName = `pacientes_activos_${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+        
+        showToast('Excel exportado correctamente', 'success');
+        
+    } catch (error) {
+        console.error('Error exportando Excel:', error);
+        showToast('Error al exportar Excel', 'error');
+    }
+}
+
+// Función formatDate si no existe en pacientes.js
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-CL', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+}
+// Función para imprimir lista de pacientes activos
+async function printActivePatients() {
+    showToast('Preparando impresión...', 'success');
+    
+    const activePatients = patients.filter(p => p.status === 'active');
+    
+    if (activePatients.length === 0) {
+        showToast('No hay pacientes activos para imprimir', 'warning');
+        return;
+    }
+    
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    
+    // Cargar detalles de cada paciente
+    const patientsWithDetails = [];
+    for (const patient of activePatients) {
+        let observations = 'Sin observaciones';
+        let tasks = 'Sin pendientes';
+        
+        try {
+            const obsResponse = await apiRequest(`/patients/${patient.id}/admission/observations`);
+            if (obsResponse && obsResponse.length > 0) {
+                observations = obsResponse.slice(0, 3)
+                    .map(obs => {
+                        const fecha = obs.createdAt ? new Date(obs.createdAt).toLocaleDateString('es-CL') : '';
+                        return `${fecha}: ${obs.observation}`;
+                    }).join(' | ');
+            }
+            
+            const tasksResponse = await apiRequest(`/patients/${patient.id}/admission/tasks`);
+            if (tasksResponse && tasksResponse.length > 0) {
+                tasks = tasksResponse.slice(0, 3)
+                    .map((task, i) => `${i+1}. ${task.task}`)
+                    .join(' | ');
+            }
+        } catch (error) {
+            console.log('Error cargando detalles:', error);
+        }
+        
+        patientsWithDetails.push({
+            ...patient,
+            observationsText: observations,
+            tasksText: tasks
+        });
+    }
+    
+    // HTML simplificado usando clases CSS
+    const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Pacientes Activos - INTRANEURO</title>
+            <link rel="stylesheet" href="${window.location.origin}/css/pacientes-print.css">
+        </head>
+        <body>
+            <div class="print-container">
+                <div class="print-header">
+                    <h1>INTRANEURO - Sistema de Gestión Clínica</h1>
+                    <p>Listado de Pacientes Activos</p>
+                    <p>${new Date().toLocaleString('es-CL')}</p>
+                </div>
+                
+                <div class="print-summary">
+                    <strong>Resumen:</strong> 
+                    ${patientsWithDetails.length} pacientes activos | 
+                    ${patientsWithDetails.filter(p => p.scheduledDischarge).length} con alta programada
+                </div>
+                
+                ${patientsWithDetails.map((p, index) => `
+                    <div class="print-patient">
+                        <div class="print-patient-header">
+                            <span class="print-patient-name">${index + 1}. ${p.name}</span>
+                            ${p.scheduledDischarge ? '<span class="print-alta-hoy">ALTA HOY</span>' : ''}
+                        </div>
+                        
+                        <div class="print-field">
+                            <span class="print-field-label">Edad:</span> ${p.age} años | 
+                            <span class="print-field-label">RUT:</span> ${p.rut || 'No registrado'} | 
+                            <span class="print-field-label">Días:</span> ${p.daysInHospital}
+                        </div>
+                        
+                        <div class="print-diagnosis">
+                            <strong>Diagnóstico:</strong> ${p.diagnosis} - ${p.diagnosisText}
+                        </div>
+                        
+                        <div class="print-observations">
+                            <strong>Observaciones:</strong> ${p.observationsText}
+                        </div>
+                        
+                        <div class="print-tasks">
+                            <strong>Pendientes:</strong> ${p.tasksText}
+                        </div>
+                    </div>
+                `).join('')}
+                
+                <div class="print-footer">
+                    <p>Documento generado por INTRANEURO - ${new Date().toLocaleDateString('es-CL')}</p>
+                    <p>Este documento contiene información confidencial</p>
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
+    
+    printWindow.document.write(html);
+    printWindow.document.close();
+    
+    printWindow.onload = function() {
+        printWindow.focus();
+        printWindow.print();
+        showToast('Vista de impresión lista', 'success');
+    };
+}

@@ -81,4 +81,73 @@ const Admission = sequelize.define('Admission', {
     underscored: true
 });
 
+// Importar modelos relacionados después de la definición
+// para evitar dependencias circulares
+const setupAssociations = () => {
+    const Patient = require('./patient.model');
+    const Observation = require('./observation.model');
+    const PendingTask = require('./pending-task.model');
+    const TimelineEvent = require('./timeline-event.model');
+
+    // Relación con Patient
+    Admission.belongsTo(Patient, {
+        foreignKey: 'patient_id',
+        as: 'patient'
+    });
+
+    // Relación con Observations
+    Admission.hasMany(Observation, {
+        foreignKey: 'admission_id',
+        as: 'observations',
+        onDelete: 'CASCADE'
+    });
+
+    // Relación con PendingTasks
+    Admission.hasMany(PendingTask, {
+        foreignKey: 'admission_id',
+        as: 'pendingTasks',
+        onDelete: 'CASCADE'
+    });
+
+    // Relación con TimelineEvents
+    Admission.hasMany(TimelineEvent, {
+        foreignKey: 'admission_id',
+        as: 'timelineEvents',
+        onDelete: 'CASCADE'
+    });
+};
+
+// Método de instancia para obtener resumen
+Admission.prototype.getSummary = async function() {
+    const observationsCount = await this.countObservations();
+    const pendingTasksCount = await this.countPendingTasks({
+        where: { status: 'pending' }
+    });
+    
+    return {
+        id: this.id,
+        patient_id: this.patient_id,
+        admission_date: this.admission_date,
+        diagnosis: `${this.diagnosis_code} - ${this.diagnosis_text}`,
+        status: this.status,
+        scheduled_discharge: this.scheduled_discharge,
+        days_hospitalized: this.getDaysHospitalized(),
+        observations_count: observationsCount,
+        pending_tasks_count: pendingTasksCount
+    };
+};
+
+// Método para calcular días hospitalizado
+Admission.prototype.getDaysHospitalized = function() {
+    const start = new Date(this.admission_date);
+    const end = this.discharge_date ? new Date(this.discharge_date) : new Date();
+    const diffTime = Math.abs(end - start);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+};
+
+// Exportar el modelo
 module.exports = Admission;
+
+// Exportar función para configurar asociaciones
+module.exports.setupAssociations = setupAssociations;

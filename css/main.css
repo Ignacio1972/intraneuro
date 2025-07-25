@@ -441,3 +441,12 @@ input:checked + .slider:before {
     color: #333;
     font-weight: 500;
 }
+/* Botón Excel */
+.btn-success {
+    background-color: #27ae60;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #229954;
+}

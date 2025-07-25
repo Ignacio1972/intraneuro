@@ -1,0 +1,227 @@
+/* archivos.css - Estilos específicos para archivos */
+
+/* Tabla de archivados */
+.archived-table {
+    width: 100%;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.archived-table th {
+    background: #2c3e50;
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.archived-table td {
+    padding: 12px;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.archived-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+/* Búsqueda y filtros */
+.search-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.search-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-input {
+    flex: 1;
+    min-width: 300px;
+}
+
+.date-filter {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.info-text {
+    margin-top: 10px;
+    color: #7f8c8d;
+    font-style: italic;
+}
+
+/* Mensajes */
+.no-data, .error-message {
+    text-align: center;
+    padding: 40px;
+    color: #7f8c8d;
+}
+
+.error-message {
+    color: #e74c3c;
+}
+
+/* Botones pequeños */
+.btn-small {
+    padding: 4px 12px;
+    font-size: 0.875rem;
+}
+
+.btn-success {
+    background: #27ae60;
+}
+
+.btn-success:hover {
+    background: #219a52;
+}
+/* Tabs */
+.tabs {
+    display: flex;
+    border-bottom: 2px solid #ecf0f1;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+}
+
+.tab-btn:hover {
+    background: #f8f9fa;
+}
+
+.tab-btn.active {
+    color: #3498db;
+    border-bottom-color: #3498db;
+}
+
+/* Grid de información del paciente */
+.patient-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-item label {
+    font-weight: 600;
+    color: #7f8c8d;
+    margin-bottom: 5px;
+}
+
+.info-item span {
+    font-size: 16px;
+}
+
+/* Timeline de admisiones */
+.admissions-timeline {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.admission-card {
+    background: #f8f9fa;
+    border-left: 4px solid #3498db;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+.admission-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.admission-header h4 {
+    margin: 0;
+    color: #2c3e50;
+}
+
+.admission-dates {
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.admission-body p {
+    margin: 8px 0;
+}
+
+/* Lista de observaciones */
+.observations-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.observation-item {
+    background: white;
+    border: 1px solid #ecf0f1;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.observation-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #7f8c8d;
+}
+
+.observation-text {
+    color: #2c3e50;
+    line-height: 1.5;
+}
+
+/* Modal grande */
+.modal-large .modal-content {
+    max-width: 900px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+/* Estilos para edición */
+.form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #3498db;
+}
+/* Fix temporal para el modal */
+#archivedPatientModal.active {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 9999 !important;
+}
+
+#archivedPatientModal .modal-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}

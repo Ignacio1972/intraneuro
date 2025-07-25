@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INTRANEURO - Ficha de Paciente Archivado</title>
+    <link rel="icon" href="assets/favicon.ico">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/ficha-archivo.css">
+</head>
+<body>
+    <!-- Header Principal -->
+    <header class="ficha-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1 id="pageTitle">Ficha de Paciente Archivado</h1>
+                <div class="patient-header-info">
+                    <span id="patientNameHeader" class="patient-name-header">Cargando...</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="archivos.html" class="btn btn-secondary">
+                    <i class="icon">←</i> Volver a Archivos
+                </a>
+                <button onclick="window.print()" class="btn btn-primary">
+                    <i class="icon">🖨️</i> Imprimir
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="ficha-main">
+        <!-- Datos Personales -->
+        <section class="ficha-section">
+            <div class="section-header">
+                <h2>Datos Personales</h2>
+                <button id="editPatientBtn" onclick="toggleEditMode()" class="btn btn-small btn-secondary">
+                    <i class="icon">✏️</i> Editar
+                </button>
+            </div>
+            
+            <!-- Modo Vista -->
+            <div id="patientDataView" class="patient-data-grid">
+                <div class="data-item">
+                    <label>Nombre Completo:</label>
+                    <span id="viewName" class="data-value">-</span>
+                </div>
+                <div class="data-item">
+                    <label>RUT:</label>
+                    <span id="viewRut" class="data-value">-</span>
+                </div>
+                <div class="data-item">
+                    <label>Edad:</label>
+                    <span id="viewAge" class="data-value">-</span>
+                </div>
+                <div class="data-item">
+                    <label>Teléfono:</label>
+                    <span id="viewPhone" class="data-value">-</span>
+                </div>
+            </div>
+
+            <!-- Modo Edición -->
+            <div id="patientDataEdit" class="patient-data-grid" style="display: none;">
+                <div class="data-item">
+                    <label for="editName">Nombre Completo:</label>
+                    <input type="text" id="editName" class="form-control">
+                </div>
+                <div class="data-item">
+                    <label for="editRut">RUT:</label>
+                    <input type="text" id="editRut" class="form-control" placeholder="12345678-9">
+                </div>
+                <div class="data-item">
+                    <label for="editAge">Edad:</label>
+                    <input type="number" id="editAge" class="form-control" min="1" max="120">
+                </div>
+                <div class="data-item">
+                    <label for="editPhone">Teléfono:</label>
+                    <input type="text" id="editPhone" class="form-control" placeholder="+56 9 1234 5678">
+                </div>
+                <div class="edit-actions">
+                    <button onclick="savePatientData()" class="btn btn-success">
+                        <i class="icon">✓</i> Guardar
+                    </button>
+                    <button onclick="cancelEdit()" class="btn btn-secondary">
+                        <i class="icon">✗</i> Cancelar
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Historial de Admisiones -->
+        <section class="ficha-section">
+            <div class="section-header">
+                <h2>Historial de Admisiones</h2>
+                <span class="admission-count" id="admissionCount">0 admisiones</span>
+            </div>
+            
+            <div id="admissionsList" class="admissions-container">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </section>
+
+        <!-- Observaciones por Admisión -->
+        <section class="ficha-section" id="observationsSection" style="display: none;">
+            <div class="section-header">
+                <h2>Observaciones y Evolución</h2>
+            </div>
+            <div id="observationsContainer">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Toast para notificaciones -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/validaciones.js"></script>
+    <script src="js/data-catalogos.js"></script>
+    <script src="js/ficha-archivo.js"></script>
+</body>
+</html>
