@@ -39,6 +39,11 @@ const Admission = sequelize.define('Admission', {
         type: DataTypes.STRING(100),
         allowNull: false
     },
+    bed: {
+        type: DataTypes.STRING(20),
+        allowNull: true,
+        defaultValue: 'Sin asignar'
+    },
     discharge_date: {
         type: DataTypes.DATEONLY,
         allowNull: true
@@ -131,6 +136,7 @@ Admission.prototype.getSummary = async function() {
         diagnosis: `${this.diagnosis_code} - ${this.diagnosis_text}`,
         status: this.status,
         scheduled_discharge: this.scheduled_discharge,
+        bed: this.bed,
         days_hospitalized: this.getDaysHospitalized(),
         observations_count: observationsCount,
         pending_tasks_count: pendingTasksCount

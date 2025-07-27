@@ -7,6 +7,7 @@
     <link rel="icon" href="assets/favicon.ico">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/ficha-archivo.css">
+    <link rel="stylesheet" href="css/modals-archivo.css">
 </head>
 <body>
     <!-- Header Principal -->
@@ -25,8 +26,15 @@
                 <button onclick="window.print()" class="btn btn-primary">
                     <i class="icon">🖨️</i> Imprimir
                 </button>
+                <button onclick="mostrarModalReingresar()" class="btn btn-success">
+    <i class="icon">🔄</i> Reingresar Paciente
+</button>
+<button onclick="mostrarModalBorrar()" class="btn btn-danger">
+    <i class="icon">🗑️</i> Borrar Ficha
+</button>
             </div>
         </div>
+        
     </header>
 
     <!-- Contenido Principal -->
@@ -100,6 +108,7 @@
                 <!-- Se llena dinámicamente -->
             </div>
         </section>
+        
 
         <!-- Observaciones por Admisión -->
         <section class="ficha-section" id="observationsSection" style="display: none;">
@@ -119,6 +128,77 @@
 
     <!-- Toast para notificaciones -->
     <div id="toast" class="toast"></div>
+    <!-- Modal de confirmación para borrar -->
+<div id="modalBorrar" class="modal" style="display: none;">
+    <div class="modal-content modal-small">
+        <div class="modal-header">
+            <h2>⚠️ Confirmar Eliminación</h2>
+            <button class="close-btn" onclick="cerrarModalBorrar()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p><strong>¿Está seguro que desea eliminar completamente esta ficha?</strong></p>
+            <p>Se eliminarán:</p>
+            <ul>
+                <li>Todos los datos del paciente</li>
+                <li>Todas las admisiones</li>
+                <li>Todas las observaciones</li>
+                <li>Todo el historial médico</li>
+            </ul>
+            <p class="warning-text" style="color: #e74c3c; font-weight: bold; margin-top: 1rem;">
+                ⚠️ Esta acción NO se puede deshacer
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button onclick="confirmarBorrado()" class="btn btn-danger">Sí, Borrar Todo</button>
+            <button onclick="cerrarModalBorrar()" class="btn btn-secondary">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para reingresar -->
+<div id="modalReingresar" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Reingresar Paciente</h2>
+            <button class="close-btn" onclick="cerrarModalReingresar()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="formReingresar">
+                <div class="form-group">
+                    <label>Nombre Completo:</label>
+                    <input type="text" id="reingresoNombre" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>RUT:</label>
+                    <input type="text" id="reingresoRut" class="form-control" placeholder="12345678-9">
+                </div>
+                <div class="form-group">
+                    <label>Edad:</label>
+                    <input type="number" id="reingresoEdad" class="form-control" min="1" max="120" required>
+                </div>
+                <div class="form-group">
+                    <label>Teléfono:</label>
+                    <input type="text" id="reingresoTelefono" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Diagnóstico:</label>
+                    <select id="reingresoDiagnostico" class="form-control" required>
+                        <option value="">Seleccione diagnóstico...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Cama:</label>
+                    <input type="text" id="reingresoCama" class="form-control" placeholder="Ej: 12A">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button onclick="procesarReingreso()" class="btn btn-primary">Reingresar</button>
+            <button onclick="cerrarModalReingresar()" class="btn btn-secondary">Cancelar</button>
+        </div>
+    </div>
+</div>
+    
 
     <!-- Scripts -->
     <script src="js/api.js"></script>

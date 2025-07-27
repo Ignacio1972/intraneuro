@@ -40,6 +40,7 @@ async function handleAdmission(e) {
         age: parseInt(document.getElementById('patientAge').value),
         rut: document.getElementById('noRut').checked ? null : document.getElementById('patientRut').value,
         phone: document.getElementById('patientPhone').value,
+        bed: document.getElementById('patientBed').value || 'Sin asignar',
         admissionDate: document.getElementById('admissionDate').value,
         diagnosis: document.getElementById('diagnosis').value,
         diagnosisText: getDiagnosisText(document.getElementById('diagnosis').value),
@@ -77,6 +78,7 @@ async function handleAdmission(e) {
             // Crear objeto paciente con datos de respuesta
             const newPatient = {
                 ...response.patient,
+                bed: formData.bed,
                 admissionDate: formData.admissionDate,
                 diagnosis: formData.diagnosis,
                 diagnosisText: formData.diagnosisText,

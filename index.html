@@ -119,50 +119,60 @@
         </div>
 
     <!-- New Admission Modal -->
-    <div id="admissionModal" class="modal admission-modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Nuevo Ingreso</h2>
-            <form id="admissionForm">
-                <div class="form-section">
-                    <h3>📝 Datos Personales</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Nombre y Apellido</label>
-                            <input type="text" id="patientName" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Edad</label>
-                            <input type="number" id="patientAge" min="1" max="120" required>
-                        </div>
+<!-- New Admission Modal -->
+<div id="admissionModal" class="modal admission-modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Nuevo Ingreso</h2>
+        <form id="admissionForm">
+            <div class="form-section">
+                <h3>📝 Datos Personales</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre y Apellido</label>
+                        <input type="text" id="patientName" required>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>RUT</label>
-                            <input type="text" id="patientRut" placeholder="12.345.678-9">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="noRut"> Sin RUT
-                            </label>
-                        </div>
-                        <div class="form-group">
-                            <label>Teléfono</label>
-                            <input type="tel" id="patientPhone">
+                    <div class="form-group">
+                        <label>Edad</label>
+                        <input type="number" id="patientAge" min="1" max="120" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>RUT</label>
+                        <input type="text" id="patientRut" placeholder="12.345.678-9">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="noRut"> Sin RUT
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" id="patientPhone">
+                    </div>
+                </div>
+                <!-- CAMPO CAMA AQUÍ, DENTRO DE form-section -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cama Asignada</label>
+                        <input type="text" id="patientBed" placeholder="Ej: 1-A, 205, B12" maxlength="20">
+                        <small style="color: #666;">Opcional - Puede contener números y letras</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>📅 Ingreso</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fecha de Ingreso</label>
+                        <div class="date-input-group">
+                            <input type="date" id="admissionDate" required>
+                            <button type="button" class="btn-today" onclick="setToday('admissionDate')">HOY</button>
                         </div>
                     </div>
                 </div>
-
-                <div class="form-section">
-                    <h3>📅 Ingreso</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Fecha de Ingreso</label>
-                            <div class="date-input-group">
-                                <input type="date" id="admissionDate" required>
-                                <button type="button" class="btn-today" onclick="setToday('admissionDate')">HOY</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group diagnosis-group">
+                <div class="form-group diagnosis-group">
+                   
                         <label>Diagnóstico</label>
                         <select id="diagnosis" required>
                             <option value="">Seleccione diagnóstico...</option>

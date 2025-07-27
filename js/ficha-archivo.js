@@ -135,6 +135,13 @@ function displayAdmissions() {
                             <label>Médico de Alta:</label>
                             <span>${admission.dischargedBy || '-'}</span>
                         </div>
+                        
+                        ${admission.dischargeDetails ? `
+                        <div class="detail-item discharge-details">
+                            <label>Detalles de Egreso:</label>
+                            <div class="details-text">${admission.dischargeDetails}</div>
+                        </div>
+                        ` : ''}
                     </div>
                 </div>
                 
@@ -149,7 +156,6 @@ function displayAdmissions() {
     
     container.innerHTML = html;
 }
-
 // Cargar observaciones de una admisión
 async function loadObservations(admissionId) {
     showLoading(true);
@@ -368,10 +374,114 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
+
 // Imprimir - configuración especial
 window.addEventListener('beforeprint', () => {
     // Expandir todas las secciones para impresión
     document.querySelectorAll('.admission-card').forEach(card => {
         card.style.pageBreakInside = 'avoid';
     });
+    
 });
+// Funciones para el modal de borrar
+function mostrarModalBorrar() {
+    document.getElementById('modalBorrar').style.display = 'flex';
+}
+
+function cerrarModalBorrar() {
+    document.getElementById('modalBorrar').style.display = 'none';
+}
+
+async function confirmarBorrado() {
+    showLoading(true);
+    
+    try {
+        await apiRequest(`/patients/${patientId}`, {
+            method: 'DELETE'
+        });
+        
+        showToast('Ficha eliminada correctamente', 'success');
+        
+        // Esperar un momento y redirigir
+        setTimeout(() => {
+            window.location.href = 'archivos.html';
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Error borrando paciente:', error);
+        showToast('Error al borrar la ficha', 'error');
+        showLoading(false);
+    }
+}
+
+// Funciones para el modal de reingresar
+function mostrarModalReingresar() {
+    // Pre-llenar el formulario con datos actuales
+    document.getElementById('reingresoNombre').value = patientData.name || '';
+    document.getElementById('reingresoRut').value = patientData.rut || '';
+    document.getElementById('reingresoEdad').value = patientData.age || '';
+    document.getElementById('reingresoTelefono').value = patientData.phone || '';
+    
+    // Llenar select de diagnósticos
+    const select = document.getElementById('reingresoDiagnostico');
+    select.innerHTML = '<option value="">Seleccione diagnóstico...</option>';
+    
+    if (typeof DIAGNOSTICOS !== 'undefined') {
+        DIAGNOSTICOS.forEach(diag => {
+            const option = document.createElement('option');
+            option.value = diag.codigo;
+            option.textContent = `${diag.codigo} - ${diag.nombre}`;
+            select.appendChild(option);
+        });
+    }
+    
+    document.getElementById('modalReingresar').style.display = 'flex';
+}
+
+function cerrarModalReingresar() {
+    document.getElementById('modalReingresar').style.display = 'none';
+}
+
+async function procesarReingreso() {
+    const form = document.getElementById('formReingresar');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    const diagSelect = document.getElementById('reingresoDiagnostico');
+    const diagText = diagSelect.options[diagSelect.selectedIndex]?.text.split(' - ')[1] || '';
+    
+    const datos = {
+        name: document.getElementById('reingresoNombre').value,
+        age: parseInt(document.getElementById('reingresoEdad').value),
+        rut: document.getElementById('reingresoRut').value || null,
+        phone: document.getElementById('reingresoTelefono').value || '',
+        admissionDate: new Date().toISOString().split('T')[0],
+        diagnosis: document.getElementById('reingresoDiagnostico').value,
+        diagnosisText: diagText,
+        bed: document.getElementById('reingresoCama').value || 'Sin asignar',
+        admittedBy: sessionStorage.getItem('currentUser') || 'Sistema'
+    };
+    
+    showLoading(true);
+    
+    try {
+        await apiRequest('/patients', {
+            method: 'POST',
+            body: JSON.stringify(datos)
+        });
+        
+        showToast('Paciente reingresado correctamente', 'success');
+        
+        // Redirigir al sistema principal
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Error reingresando paciente:', error);
+        showToast('Error al reingresar paciente', 'error');
+        showLoading(false);
+    }
+}

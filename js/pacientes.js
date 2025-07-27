@@ -365,7 +365,7 @@ async function exportActivePatientsToExcel() {
             ['LISTADO DE PACIENTES ACTIVOS - INTRANEURO'],
             ['Fecha de generación:', new Date().toLocaleString('es-CL')],
             [''],
-            ['Fecha Ingreso', 'Nombre Paciente', 'Edad', 'Alergias', 'Diagnóstico', 'Descripción', 'Historia', 'Pendientes', 'Estado', 'Días Hospitalizados']
+            ['Fecha Ingreso', 'Nombre Paciente', 'Cama', 'Edad', 'Alergias', 'Diagnóstico', 'Descripción', 'Historia', 'Pendientes', 'Estado', 'Días Hospitalizados']
         ];
         
         // Cargar datos completos de cada paciente
@@ -448,6 +448,7 @@ async function exportActivePatientsToExcel() {
             excelData.push([
                 formatDate(patient.admissionDate) || '-',
                 patient.name || '-',
+                patient.bed || 'Sin asignar',
                 patient.age || '-',
                 patient.allergies || 'Sin alergias',
                 diagnosticoFormateado,
@@ -467,15 +468,6 @@ async function exportActivePatientsToExcel() {
         const scheduledDischarges = patients.filter(p => p.scheduledDischarge).length;
         excelData.push(['Altas programadas para hoy:', scheduledDischarges]);
         
-        const totalDays = patients.reduce((sum, patient) => {
-            if (patient.admissionDate) {
-                return sum + Math.ceil((new Date() - new Date(patient.admissionDate)) / (1000 * 60 * 60 * 24));
-            }
-            return sum;
-        }, 0);
-        const avgDays = patients.length > 0 ? Math.round(totalDays / patients.length) : 0;
-        excelData.push(['Promedio días hospitalizado:', avgDays]);
-        
         // Crear hoja
         const ws = XLSX.utils.aoa_to_sheet(excelData);
         
@@ -483,6 +475,7 @@ async function exportActivePatientsToExcel() {
         ws['!cols'] = [
             { wch: 15 }, // Fecha Ingreso
             { wch: 30 }, // Nombre
+            { wch: 10 }, // Cama
             { wch: 8 },  // Edad
             { wch: 25 }, // Alergias
             { wch: 35 }, // Diagnóstico
@@ -495,8 +488,8 @@ async function exportActivePatientsToExcel() {
         
         // Combinar celdas del título
         ws['!merges'] = [
-            { s: { r: 0, c: 0 }, e: { r: 0, c: 9 } },
-            { s: { r: 1, c: 0 }, e: { r: 1, c: 9 } }
+            { s: { r: 0, c: 0 }, e: { r: 0, c: 10 } },
+            { s: { r: 1, c: 0 }, e: { r: 1, c: 10 } }
         ];
         
         XLSX.utils.book_append_sheet(wb, ws, 'Pacientes Activos');
@@ -507,7 +500,7 @@ async function exportActivePatientsToExcel() {
             const altasData = [
                 ['PACIENTES CON ALTA PROGRAMADA PARA HOY'],
                 [''],
-                ['Fecha Ingreso', 'Nombre', 'Edad', 'Diagnóstico', 'Días Hospitalizado', 'Médico Tratante']
+                ['Fecha Ingreso', 'Nombre', 'Cama', 'Edad', 'Diagnóstico', 'Días Hospitalizado', 'Médico Tratante']
             ];
             
             scheduledPatients.forEach(patient => {
@@ -518,6 +511,7 @@ async function exportActivePatientsToExcel() {
                 altasData.push([
                     formatDate(patient.admissionDate),
                     patient.name,
+                    patient.bed || 'Sin asignar',
                     patient.age,
                     `${patient.diagnosis} - ${patient.diagnosisText}`,
                     days,
@@ -529,6 +523,7 @@ async function exportActivePatientsToExcel() {
             ws2['!cols'] = [
                 { wch: 15 },
                 { wch: 30 },
+                { wch: 10 },
                 { wch: 8 },
                 { wch: 50 },
                 { wch: 15 },
@@ -632,13 +627,12 @@ async function printActivePatients() {
                 ${patientsWithDetails.map((p, index) => `
                     <div class="print-patient">
                         <div class="print-patient-header">
-                            <span class="print-patient-name">${index + 1}. ${p.name}</span>
+                            <span class="print-patient-name">${index + 1}. ${p.name} - Cama ${p.bed || 'Sin asignar'}</span>
                             ${p.scheduledDischarge ? '<span class="print-alta-hoy">ALTA HOY</span>' : ''}
                         </div>
                         
                         <div class="print-field">
                             <span class="print-field-label">Edad:</span> ${p.age} años | 
-                            <span class="print-field-label">RUT:</span> ${p.rut || 'No registrado'} | 
                             <span class="print-field-label">Días:</span> ${p.daysInHospital}
                         </div>
                         
@@ -673,4 +667,37 @@ async function printActivePatients() {
         printWindow.print();
         showToast('Vista de impresión lista', 'success');
     };
+}
+// Función para editar cama
+async function editBed(event, patientId) {
+   event.stopPropagation(); // Evitar abrir el modal del paciente
+   
+   const patient = patients.find(p => p.id === patientId);
+   if (!patient) return;
+   
+   const currentBed = patient.bed || 'Sin asignar';
+   
+   const newBed = prompt(`Cambiar cama del paciente ${patient.name}:\n\nCama actual: ${currentBed}`, currentBed);
+   
+   if (newBed !== null && newBed !== currentBed) {
+       try {
+           const response = await apiRequest(`/patients/${patientId}/bed`, {
+               method: 'PUT',
+               body: JSON.stringify({ bed: newBed })
+           });
+           
+           if (response.success) {
+               // Actualizar array local
+               patient.bed = newBed || 'Sin asignar';
+               
+               // Re-renderizar pacientes
+               renderPatients();
+               
+               showToast('Cama actualizada correctamente');
+           }
+       } catch (error) {
+           console.error('Error actualizando cama:', error);
+           showToast('Error al actualizar cama', 'error');
+       }
+   }
 }

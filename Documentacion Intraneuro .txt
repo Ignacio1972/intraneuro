@@ -1,156 +1,111 @@
- DOCUMENTACIÓN COMPLETA - SISTEMA INTRANEURO
-Fecha: 22 de Julio de 2025
-Versión: 1.0
-Estado: 100% Funcional en Producción
+CONTEXTO DEL PROYECTO:
+- URL en producción: https://intraneuro.lat
+- Repositorio: https://github.com/Ignacio1972/intraneuro
+- Estado: Frontend 100% completado y funcionando, backend 100% implementado
+- Datos: Persistiendo en PostgreSQL con fallback a memoria
 
-🎯 RESUMEN EJECUTIVO
-INTRANEURO es un sistema de gestión hospitalaria para clínica psiquiátrica en Chile, completamente funcional con:
+⚠️ REGLAS CRÍTICAS - LEER ANTES DE CONTINUAR:
+1. PROHIBIDO escribir código sin autorización explícita
+2. El frontend ESTÁ EN PRODUCCIÓN - no se puede romper nada
+3. Siempre: ANALIZAR → PREGUNTAR → PROPONER → ESPERAR APROBACIÓN → IMPLEMENTAR
+4. Si algo no está 100% claro, DETENERSE y consultar
+5. MANTENER SIEMPRE el sistema de fallback (si API falla, usar datos locales)
 
-Frontend: 100% completado (JavaScript Vanilla)
-Backend: 100% funcional (Node.js + Express + PostgreSQL)
-Todas las funcionalidades core implementadas y operativas
+PRIMER PASO OBLIGATORIO:
+Por favor, lee estos 3 documentos en orden para entender el proyecto:
 
+1. README del proyecto:
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/README.md
 
-✅ ESTADO DE FUNCIONALIDADES
-1. AUTENTICACIÓN Y SEGURIDAD
-CaracterísticaEstadoDescripciónLogin✅ FuncionandoJWT con expiración 8hLogout✅ FuncionandoLimpia token y sesiónProtección rutas✅ FuncionandoMiddleware verifica JWTFallback✅ FuncionandoSi API falla, usa datos locales
-2. GESTIÓN DE PACIENTES
-CaracterísticaEstadoDescripciónLista pacientes activos✅ FuncionandoVista tarjetas/tablaIngreso nuevo paciente✅ FuncionandoValidación RUT opcionalEgreso/Alta✅ FuncionandoCon escala RankinAlta programada✅ FuncionandoToggle ON/OFFBúsqueda por RUT✅ Endpoint existeFrontend no implementado
-3. FUNCIONALIDADES CLÍNICAS
-CaracterísticaEstadoDescripciónObservaciones✅ FuncionandoHistorial completoTareas pendientes✅ FuncionandoLista por pacienteDashboard estadísticas✅ FuncionandoContadores en tiempo realTimeline paciente⏳ ParcialMuestra solo ingreso
-4. INTERFAZ USUARIO
-CaracterísticaEstadoDescripciónNotificaciones toast✅ FuncionandoFeedback visualBadges visuales✅ Funcionando"ALTA HOY" en tarjetasModales✅ FuncionandoFicha completa pacienteResponsive✅ FuncionandoAdaptable a móviles
+2. PARTE 1 - Visión General y Arquitectura:
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/docs/PARTE_1_VISION_GENERAL_Y_ARQUITECTURA.md
 
-📁 ARQUITECTURA Y ARCHIVOS CLAVE
-FRONTEND (/var/www/intraneuro/)
-HTML Principal
+3. PARTE 2 - Implementación del Backend:
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/docs/PARTE_2_IMPLEMENTACION_DEL_BACKEND.md
 
-index.html - Estructura principal, contiene todos los modales y contenedores
+4. PARTE 3 - Integración Frontend-Backend:
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/docs/PARTE_3_INTEGRACION_FRONTEND_BACKEND.md
 
-JavaScript Core (/js/)
-ArchivoFunciónDependenciasmain.jsOrquestador principal, datos mock, dashboard-api.jsHelper para llamadas HTTP, manejo tokens-auth.jsLogin/logout, validación usuariosapi.jspacientes.jsLista, modal, egreso, toggle altaapi.js, catalogos, uiingreso.jsFormulario nuevo pacienteapi.js, validacionesvalidaciones.jsValidación RUT chileno-
-JavaScript Modular (Nuevos)
-ArchivoFunciónUsado pordata-catalogos.jsDiagnósticos CIE-10, mensajespacientes.jspacientes-ui.jsComponentes visuales, toastpacientes.js
-CSS (/css/)
+ESTADO ACTUAL (25 Julio 2025):
+✅ COMPLETADO:
+- Backend con Node.js + Express + PostgreSQL
+- Autenticación JWT funcionando
+- Dashboard conectado con datos reales
+- Lista de pacientes desde BD
+- Ingreso de pacientes guardando en BD con CAMA
+- Egreso/Alta de pacientes funcionando
+- Toggle "Alta Programada para Hoy" implementado
+- Sistema de notificaciones toast
+- Código modularizado (data-catalogos.js, pacientes-ui.js)
+- Validaciones flexibles (RUT no obligatorio)
+- Gestión de camas (asignar y editar)
+- Exportar a Excel con columna cama
+- Imprimir con número de cama
 
-main.css - Estilos generales y layout
-modal.css - Estilos de modales
-pacientes.css - Estilos específicos de pacientes
-login.css - Estilos de autenticación
+⏳ PENDIENTE:
+1. Búsqueda por RUT (endpoint existe, falta UI)
+2. Timeline completo del paciente
+3. Implementar bcrypt para passwords
+4. Backup automático y logs de auditoría
+5. Rate limiting para seguridad
 
-BACKEND (/var/www/intraneuro/backend/)
-Estructura
-backend/
-├── server.js              # Punto de entrada
-├── .env                   # Variables de entorno
-└── src/
-    ├── config/
-    │   └── database.js    # Configuración PostgreSQL
-    ├── controllers/
-    │   ├── auth.controller.js       # Login/JWT
-    │   ├── patients.controller.js   # CRUD pacientes
-    │   └── dashboard.controller.js  # Estadísticas
-    ├── models/
-    │   ├── patient.model.js    # Modelo paciente
-    │   ├── admission.model.js  # Modelo admisión
-    │   └── user.model.js       # Modelo usuario
-    ├── routes/
-    │   ├── index.js           # Router principal
-    │   ├── auth.routes.js     # Rutas autenticación
-    │   └── patients.routes.js # Rutas pacientes
-    └── middleware/
-        └── auth.middleware.js  # Verificación JWT
+📁 ARCHIVOS MODIFICADOS HOY (25/07):
+- /backend/src/models/admission.model.js - Campo bed agregado
+- /backend/src/controllers/patients.controller.js - CRUD de camas
+- /backend/src/routes/patients.routes.js - Ruta PUT /:id/bed
+- /index.html - Campo cama en formulario ingreso
+- /js/ingreso.js - Captura y envío de cama
+- /js/pacientes-ui.js - Visualización de camas
+- /js/pacientes.js - Función editBed() y exportar/imprimir
 
-🔄 FLUJO DE DATOS
-1. Autenticación
-Login → auth.js → POST /api/login → JWT → localStorage → api.js headers
-2. Carga de Pacientes
-renderPatients() → GET /api/patients/active → patients[] → renderPatientCard()
-                                                ↓ (fallback)
-                                          patients[] en main.js
-3. Alta Programada
-Toggle → toggleScheduledDischarge() → PUT /api/patients/:id/discharge
-      ↓                                        ↓
-updateDashboard()                    Actualiza BD scheduled_discharge
-      ↓
-Actualiza contador
+📁 ARCHIVOS YA MODIFICADOS (HISTÓRICO):
+- /js/api.js - Helper para llamadas API
+- /js/auth.js - Login con API + fallback
+- /js/main.js - Dashboard conectado
+- /js/validaciones.js - RUT no obligatorio
+- /js/data-catalogos.js - Catálogos centralizados
 
-🗄️ BASE DE DATOS
-Tablas Principales
-TablaFunciónRelacionesusersUsuarios del sistema-patientsDatos básicos paciente1:N con admissionsadmissionsIngresos/egresosN:1 con patientsobservationsObservaciones médicasN:1 con admissionspending_tasksTareas pendientesN:1 con admissions
-Campos Críticos
+Después de leer la documentación, por favor:
+1. Confirma que entendiste la arquitectura actual
+2. Hazme preguntas sobre cualquier duda
+3. NO sugieras cambios sin entender el contexto completo
 
-admissions.status: 'active' o 'discharged'
-admissions.scheduled_discharge: boolean para alta programada
-patients.rut: Único pero opcional
+¿En qué puedo ayudarte hoy con INTRANEURO?
 
+LISTA DE ENLACES RAW MÁS IMPORTANTES
 
-🚀 ENDPOINTS API
-Autenticación
-POST   /api/login                    # Login con username/password
-GET    /api/verify-token            # Verificar JWT válido
-Pacientes
-GET    /api/patients/active         # Lista pacientes activos
-POST   /api/patients                # Crear paciente + admisión
-GET    /api/patients/:id            # Detalle paciente
-PUT    /api/patients/:id/discharge  # Toggle alta programada
-GET    /api/patients/search?rut=X   # Buscar por RUT
-Observaciones y Tareas
-GET    /api/patients/:id/admission/observations  # Lista observaciones
-POST   /api/patients/:id/admission/observations  # Nueva observación
-GET    /api/patients/:id/admission/tasks        # Lista tareas
-POST   /api/patients/:id/admission/tasks        # Nueva tarea
-Dashboard
-GET    /api/dashboard/stats         # Estadísticas
+📚 Documentación (LEER PRIMERO)
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/README.md
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/docs/PARTE_1_VISION_GENERAL_Y_ARQUITECTURA.md
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/docs/PARTE_2_IMPLEMENTACION_DEL_BACKEND.md
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/docs/PARTE_3_INTEGRACION_FRONTEND_BACKEND.md
 
-🔧 CONFIGURACIÓN
-Variables de Entorno (.env)
-envPORT=3000
-NODE_ENV=production
-DB_HOST=localhost
-DB_NAME=intraneuro_db
-DB_USER=intraneuro_user
-DB_PASS=[SEGURO]
-JWT_SECRET=[SECRETO]
-JWT_EXPIRE=8h
-FRONTEND_URL=https://intraneuro.lat
-Nginx (/etc/nginx/sites-available/intraneuro)
+🏗️ Estructura Principal
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/index.html
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/init_db.sql
 
-Sirve frontend en /
-Proxy API en /api/* → localhost:3000
-SSL con Let's Encrypt
+📱 JavaScript Frontend (Core)
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/js/main.js
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/js/auth.js
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/js/pacientes.js
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/js/data-catalogos.js
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/js/pacientes-ui.js
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/js/ingreso.js
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/js/validaciones.js
 
-PM2
+🎨 CSS (Si necesitas revisar estilos)
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/css/main.css
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/css/modal.css
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/css/pacientes.css
+https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/css/login.css
 
-Proceso: intraneuro-api
-Auto-restart configurado
-Logs: pm2 logs intraneuro-api
+PROMPT CORTO ALTERNATIVO (Para consultas rápidas)
+Proyecto INTRANEURO - Frontend y backend 100% implementados en producción.
+Repo: https://github.com/Ignacio1972/intraneuro
 
+IMPORTANTE: No escribir código sin autorización. Leer documentación primero:
+- https://raw.githubusercontent.com/Ignacio1972/intraneuro/main/README.md
+- Docs en: /docs/PARTE_1, PARTE_2, PARTE_3
 
-📊 MÉTRICAS ACTUALES
-
-Pacientes activos: 6
-Con alta programada: 3 (IDs: 5, 8, 6)
-Observaciones totales: 13+
-Tareas pendientes: 9+
-Usuarios sistema: 4
-
-
-🔐 SEGURIDAD PENDIENTE
-
-Passwords sin hash - Implementar bcrypt
-Sin rate limiting - Prevenir fuerza bruta
-Logs básicos - Implementar auditoría completa
-Backups manuales - Automatizar cada 3 días
-
-
-📝 NOTAS IMPORTANTES
-
-Sistema de Fallback: Si la API falla, el frontend usa datos locales de main.js
-IDs Mixtos: Frontend usa patient_id, algunos endpoints esperan admission_id
-RUT Opcional: Validación existe pero no es obligatoria
-Token 8h: Los usuarios deben re-autenticarse cada 8 horas
-
-
-Última actualización: 22 de Julio de 2025
-Mantenedor: Sistema en producción estable
+Estado: Sistema completo funcionando con gestión de camas implementada.
+Pendiente: Búsqueda por RUT en UI, Timeline completo, Seguridad (bcrypt, rate limit).

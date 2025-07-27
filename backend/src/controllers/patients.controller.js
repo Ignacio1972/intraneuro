@@ -98,6 +98,7 @@ exports.getActivePatients = async (req, res) => {
                 age: p.age,
                 rut: p.rut,
                 phone: p.phone,
+                bed: admission.bed || 'Sin asignar',
                 admissionDate: admission.admission_date,
                 diagnosis: admission.diagnosis_code,
                 diagnosisText: admission.diagnosis_text,
@@ -148,7 +149,7 @@ exports.createPatient = async (req, res) => {
     
     try {
         const {
-            name, age, rut, phone,
+            name, age, rut, phone, bed,
             admissionDate, diagnosis, diagnosisText, 
             diagnosisDetails, allergies, admittedBy
         } = req.body;
@@ -170,6 +171,7 @@ exports.createPatient = async (req, res) => {
         const admission = await Admission.create({
             patient_id: patient.id,
             admission_date: admissionDate,
+            bed: bed || 'Sin asignar',
             diagnosis_code: diagnosis,
             diagnosis_text: diagnosisText,
             diagnosis_details: diagnosisDetails,
@@ -201,6 +203,7 @@ function calculateDays(startDate) {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
 }
+
 // Buscar por RUT
 exports.searchByRut = async (req, res) => {
     try {
@@ -292,6 +295,38 @@ exports.updateDischarge = async (req, res) => {
         await transaction.rollback();
         console.error('Error actualizando discharge:', error);
         res.status(500).json({ error: 'Error del servidor' });
+    }
+};
+
+// Actualizar cama de paciente
+exports.updateBed = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { bed } = req.body;
+        
+        // Buscar admisión activa
+        const admission = await Admission.findOne({
+            where: { 
+                patient_id: id,
+                status: 'active'
+            }
+        });
+        
+        if (!admission) {
+            return res.status(404).json({ error: 'Admisión activa no encontrada' });
+        }
+        
+        admission.bed = bed || 'Sin asignar';
+        await admission.save();
+        
+        res.json({ 
+            success: true, 
+            bed: admission.bed 
+        });
+        
+    } catch (error) {
+        console.error('Error actualizando cama:', error);
+        res.status(500).json({ error: 'Error al actualizar cama' });
     }
 };
 
@@ -389,6 +424,7 @@ exports.getArchivedPatients = async (req, res) => {
                 diagnosisText: admission.diagnosis_text,
                 diagnosisDetails: admission.diagnosis_details,
                 allergies: admission.allergies,
+                bed: admission.bed,
                 ranking: admission.ranking,
                 dischargedBy: admission.discharged_by,
                 deceased: admission.deceased
@@ -433,7 +469,9 @@ exports.getPatientHistory = async (req, res) => {
                 diagnosis: admission.diagnosis_code,
                 diagnosisText: admission.diagnosis_text,
                 diagnosisDetails: admission.diagnosis_details,
+                dischargeDetails: admission.discharge_details,  // ← AGREGAR ESTA LÍNEA
                 allergies: admission.allergies,
+                bed: admission.bed,
                 ranking: admission.ranking,
                 status: admission.status,
                 admittedBy: admission.admitted_by,
@@ -448,6 +486,7 @@ exports.getPatientHistory = async (req, res) => {
         res.status(500).json({ error: 'Error al obtener historial del paciente' });
     }
 };
+
 // Reingresar paciente
 exports.reAdmitPatient = async (req, res) => {
     const transaction = await sequelize.transaction();
@@ -480,6 +519,7 @@ exports.reAdmitPatient = async (req, res) => {
         const newAdmission = await Admission.create({
             patient_id: id,
             admission_date: new Date(),
+            bed: 'Sin asignar',
             diagnosis_code: 'Z00.0',
             diagnosis_text: 'Reingreso - Diagnóstico pendiente',
             diagnosis_details: 'Paciente reingresado, evaluación inicial pendiente',
@@ -547,5 +587,27 @@ exports.updatePatient = async (req, res) => {
     } catch (error) {
         console.error('Error actualizando paciente:', error);
         res.status(500).json({ error: 'Error al actualizar paciente' });
+    }
+};  // ← ESTA LLAVE FALTABA
+
+// Eliminar paciente completo
+exports.deletePatient = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Buscar paciente
+        const patient = await Patient.findByPk(id);
+        if (!patient) {
+            return res.status(404).json({ error: 'Paciente no encontrado' });
+        }
+        
+        // Eliminar (las admisiones, observaciones y tareas se eliminan por cascada)
+        await patient.destroy();
+        
+        res.json({ message: 'Paciente eliminado correctamente' });
+        
+    } catch (error) {
+        console.error('Error eliminando paciente:', error);
+        res.status(500).json({ error: 'Error al eliminar paciente' });
     }
 };

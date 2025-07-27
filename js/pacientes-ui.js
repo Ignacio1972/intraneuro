@@ -25,6 +25,15 @@ function renderPatientCard(patient) {
             </div>
             <div class="diagnosis-code">${diagnosisText}</div>
             <div class="tooltip">${patient.diagnosisText}</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; padding: 0.5rem 0; border-top: 1px solid rgba(0,0,0,0.05);">
+                <span class="patient-meta" style="font-size: 0.85rem; color: var(--text-secondary);">
+                    <span class="icon">🛏️</span> Cama: 
+                    <span class="bed-display" onclick="editBed(event, ${patient.id})" 
+                          style="cursor: pointer; text-decoration: underline; color: var(--primary-color);">
+                        ${patient.bed || 'Sin asignar'}
+                    </span>
+                </span>
+            </div>
         </div>
     `;
 }
@@ -39,6 +48,7 @@ function renderPatientTable(activePatients) {
                     <th>Edad</th>
                     <th>Días</th>
                     <th>Diagnóstico</th>
+                    <th>Cama</th>
                     <th>Ingresado</th>
                     <th>Estado</th>
                 </tr>
@@ -50,6 +60,12 @@ function renderPatientTable(activePatients) {
                         <td>${patient.age} años</td>
                         <td>${patient.daysInHospital}</td>
                         <td>${catalogos.getDiagnosisText(patient.diagnosis)}</td>
+                        <td>
+                            <span class="bed-display" onclick="editBed(event, ${patient.id})" 
+                                  style="cursor: pointer; text-decoration: underline; color: var(--primary-color);">
+                                ${patient.bed || 'Sin asignar'}
+                            </span>
+                        </td>
                         <td>${formatDate(patient.admissionDate)}</td>
                         <td>${patient.scheduledDischarge ? 
                             '<span class="badge-scheduled-table">Alta hoy</span>' : 
@@ -111,6 +127,10 @@ function renderAdmissionData(patient) {
                     <span class="info-value">${patient.rut || 'Sin RUT'}</span>
                 </div>
             </div>
+        </div>
+        <div class="patient-info-row">
+            <span class="info-label">Cama:</span>
+            <span class="info-value">${patient.bed || 'Sin asignar'}</span>
         </div>
         <div class="patient-info-row">
             <span class="info-label">Fecha Ingreso:</span>
