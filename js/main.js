@@ -158,7 +158,6 @@ function updateDashboard() {
         return admissionDate >= oneWeekAgo;
     }).length;
     
-    document.getElementById('weekAdmissions').textContent = weekAdmissions;
 }
 
 // NUEVA FUNCIÓN: Actualizar dashboard desde API con fallback
@@ -170,7 +169,6 @@ async function updateDashboardFromAPI() {
         // Actualizar contadores con datos reales
         document.querySelector('.patient-count').textContent = stats.activePatients;
         document.getElementById("avgStay").textContent = stats.scheduledDischarges;
-        document.getElementById('weekAdmissions').textContent = stats.weekAdmissions;
         
         console.log('✅ Dashboard actualizado desde API:', stats);
         

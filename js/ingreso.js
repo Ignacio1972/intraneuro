@@ -39,11 +39,11 @@ async function handleAdmission(e) {
         name: document.getElementById('patientName').value,
         age: parseInt(document.getElementById('patientAge').value),
         rut: document.getElementById('noRut').checked ? null : document.getElementById('patientRut').value,
-        phone: document.getElementById('patientPhone').value,
+        phone: null,  // CAMBIADO: Ya no existe el campo de teléfono
         bed: document.getElementById('patientBed').value || 'Sin asignar',
         admissionDate: document.getElementById('admissionDate').value,
         diagnosis: document.getElementById('diagnosis').value,
-        diagnosisText: getDiagnosisText(document.getElementById('diagnosis').value),
+        diagnosisText: document.getElementById('diagnosis').value,
         diagnosisDetails: document.getElementById('diagnosisDetails').value,
         allergies: document.querySelector('input[name="allergies"]:checked').value === 'yes' 
             ? document.getElementById('allergyDetails').value 
@@ -51,13 +51,6 @@ async function handleAdmission(e) {
         admittedBy: document.getElementById('admittedBy').value,
         status: 'active'
     };
-    
-    // Validate authorization
-    const password = document.getElementById('admissionPassword').value;
-    if (!validateAuthorization(formData.admittedBy, password)) {
-        alert('Contraseña incorrecta para el usuario especificado');
-        return;
-    }
     
     // Validate RUT if provided
     if (formData.rut && !validateRut(formData.rut)) {

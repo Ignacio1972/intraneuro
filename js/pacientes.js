@@ -124,14 +124,10 @@ function renderDischargeForm(patientId, patient) {
                </div>
            </div>
            
-           <div class="form-group">
-               <label>Diagnóstico de Egreso:</label>
-               <select id="dischargeDiagnosis" required>
-                   ${catalogos.dischargeOptions.map(opt => 
-                       `<option value="${opt.value}">${opt.text}</option>`
-                   ).join('')}
-               </select>
-           </div>
+          <div class="form-group">
+    <label>Diagnóstico de Egreso:</label>
+    <input type="text" id="dischargeDiagnosis" placeholder="Ingrese el diagnóstico de egreso..." required>
+</div>
            
            <div class="form-group">
                <label>Detalles adicionales:</label>

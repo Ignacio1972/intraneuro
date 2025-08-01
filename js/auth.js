@@ -3,7 +3,7 @@
 // Mock users for testing (MANTENER SOLO COMO FALLBACK)
 const users = [
     { username: 'admin', password: 'admin123', name: 'Administrador' },
-    { username: 'doctor1', password: 'doctor123', name: 'Dr. María Silva' },
+    { username: 'doctor1', password: 'doctor123', name: 'Dr. Intraneuro' },
     { username: 'doctor2', password: 'doctor123', name: 'Dr. Carlos Mendoza' },
     { username: 'enfermera', password: 'enfermera123', name: 'Enf. Ana Rodríguez' }
 ];
