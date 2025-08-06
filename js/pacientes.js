@@ -188,7 +188,7 @@ async function toggleScheduledDischarge(patientId) {
         }
         
         // Actualizar dashboard inmediatamente
-        updateDashboard();
+        updateDashboardFromAPI();
         
         // Actualizar badges inmediatamente
         renderPatients();
@@ -205,7 +205,7 @@ async function toggleScheduledDischarge(patientId) {
         const patient = patients.find(p => p.id === patientId);
         if (patient) {
             patient.scheduledDischarge = isChecked;
-            updateDashboard();
+            updateDashboardFromAPI();
             renderPatients();
             showToast(
                 isChecked ? catalogos.messages.scheduledSuccess : catalogos.messages.scheduledRemoved
@@ -253,7 +253,7 @@ async function processDischarge(event, patientId) {
        
        // Close modal and refresh
        closeModal('patientModal');
-       updateDashboard();
+       updateDashboardFromAPI();
        renderPatients();
        
    } catch (error) {
@@ -270,7 +270,7 @@ async function processDischarge(event, patientId) {
            
            // Close modal and refresh
            closeModal('patientModal');
-           updateDashboard();
+           updateDashboardFromAPI();
            renderPatients();
        }
    }

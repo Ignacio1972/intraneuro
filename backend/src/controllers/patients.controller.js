@@ -462,22 +462,23 @@ exports.getPatientHistory = async (req, res) => {
             age: patient.age,
             rut: patient.rut,
             phone: patient.phone,
-            admissions: patient.admissions.map(admission => ({
-                admissionId: admission.id,
-                admissionDate: admission.admission_date,
-                dischargeDate: admission.discharge_date,
-                diagnosis: admission.diagnosis_code,
-                diagnosisText: admission.diagnosis_text,
-                diagnosisDetails: admission.diagnosis_details,
-                dischargeDetails: admission.discharge_details,  // ← AGREGAR ESTA LÍNEA
-                allergies: admission.allergies,
-                bed: admission.bed,
-                ranking: admission.ranking,
-                status: admission.status,
-                admittedBy: admission.admitted_by,
-                dischargedBy: admission.discharged_by,
-                deceased: admission.deceased
-            }))
+    admissions: patient.admissions.map(admission => ({
+    admissionId: admission.id,
+    admissionDate: admission.admission_date,
+    dischargeDate: admission.discharge_date,
+    diagnosis: admission.diagnosis_code,
+    diagnosisText: admission.diagnosis_text,
+    diagnosisDetails: admission.diagnosis_details,
+    dischargeDiagnosis: admission.discharge_diagnosis,  // ← ESTA ES LA LÍNEA QUE HAY QUE AGREGAR
+    dischargeDetails: admission.discharge_details,      // ← ESTA YA EXISTE
+    allergies: admission.allergies,
+    bed: admission.bed,
+    ranking: admission.ranking,
+    status: admission.status,
+    admittedBy: admission.admitted_by,
+    dischargedBy: admission.discharged_by,
+    deceased: admission.deceased
+}))
         };
         
         res.json(formattedResponse);

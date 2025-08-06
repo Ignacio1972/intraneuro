@@ -65,7 +65,7 @@ async function apiRequest(endpoint, options = {}) {
                 sessionStorage.removeItem('currentUser');
                 console.error('TOKEN EXPIRADO - Endpoint:', endpoint);
                 console.error('Response:', response);
-                // window.location.reload();
+                window.location.reload();
                 return;
             }
             

@@ -96,7 +96,7 @@ async function handleAdmission(e) {
             // Close modal y actualizar vista
             setTimeout(() => {
                 closeModal('admissionModal');
-                updateDashboard();
+                updateDashboardFromAPI();
                 // Recargar pacientes desde API para mantener sincronía
                 if (typeof loadPatientsFromAPI === 'function') {
                     loadPatientsFromAPI().then(() => renderPatients());
@@ -131,7 +131,7 @@ async function handleAdmission(e) {
     // Close modal
     setTimeout(() => {
         closeModal('admissionModal');
-        updateDashboard();
+        updateDashboardFromAPI();
         renderPatients();
     }, 1500);
 }
