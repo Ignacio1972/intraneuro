@@ -102,32 +102,19 @@ function renderDischargeForm(patientId, patient) {
        </div>
        
        <form id="dischargeForm" class="discharge-form" onsubmit="processDischarge(event, ${patientId})">
-           <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 1rem;">
-               <div class="form-group">
-                   <label>Escala de Rankin:</label>
-                   <div class="rankin-selector" id="rankinSelector">
-                       ${[0,1,2,3,4,5,6].map(i => 
-                           `<div class="rankin-item">
-                               <span class="circle" data-rating="${i}" onclick="setRating(${i})">○</span>
-                               <span class="rankin-number">${i}</span>
-                           </div>`
-                       ).join('')}
-                   </div>
-                   <input type="hidden" id="patientRanking" value="0" required>
-               </div>
-               
-               <div class="form-group">
-                   <label style="margin-bottom: 2rem;">&nbsp;</label>
-                   <label>
-                       <input type="checkbox" id="patientDeceased"> Paciente fallecido
-                   </label>
-               </div>
+           <!-- ESCALA RANKIN TEMPORALMENTE DESHABILITADA - 08/08/2025 -->
+           <input type="hidden" id="patientRanking" value="0">
+           
+           <div class="form-group">
+               <label>
+                   <input type="checkbox" id="patientDeceased"> Paciente fallecido
+               </label>
            </div>
            
-          <div class="form-group">
-    <label>Diagnóstico de Egreso:</label>
-    <input type="text" id="dischargeDiagnosis" placeholder="Ingrese el diagnóstico de egreso..." required>
-</div>
+           <div class="form-group">
+               <label>Diagnóstico de Egreso:</label>
+               <input type="text" id="dischargeDiagnosis" placeholder="Ingrese el diagnóstico de egreso..." required>
+           </div>
            
            <div class="form-group">
                <label>Detalles adicionales:</label>
@@ -145,23 +132,25 @@ function renderDischargeForm(patientId, patient) {
        </form>
    `;
 }
-
 // Set rating con círculos
+// FUNCIÓN RANKIN TEMPORALMENTE DESHABILITADA - 08/08/2025
+/*
 function setRating(rating) {
-   document.getElementById('patientRanking').value = rating;
-   
-   // Update visual con círculos
-   const circles = document.querySelectorAll('#rankinSelector .circle');
-   circles.forEach((circle, index) => {
-       if (index <= rating) {
-           circle.textContent = '●';
-           circle.classList.add('active');
-       } else {
-           circle.textContent = '○';
-           circle.classList.remove('active');
-       }
-   });
+    document.getElementById('patientRanking').value = rating;
+    
+    // Update visual con círculos
+    const circles = document.querySelectorAll('#rankinSelector .circle');
+    circles.forEach((circle, index) => {
+        if (index <= rating) {
+            circle.textContent = '●';
+            circle.classList.add('active');
+        } else {
+            circle.textContent = '○';
+            circle.classList.remove('active');
+        }
+    });
 }
+*/
 
 // NUEVA FUNCIÓN: Toggle de alta programada - CORREGIDA
 async function toggleScheduledDischarge(patientId) {
@@ -544,7 +533,8 @@ async function exportActivePatientsToExcel() {
 // Función formatDate si no existe en pacientes.js
 function formatDate(dateString) {
     if (!dateString) return '-';
-    const date = new Date(dateString);
+    // FIX: Agregar T12:00:00 para evitar problemas de timezone
+    const date = new Date(dateString + 'T12:00:00');
     return date.toLocaleDateString('es-CL', {
         day: '2-digit',
         month: '2-digit',

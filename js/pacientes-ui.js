@@ -191,19 +191,22 @@ function renderAdmissionData(patient) {
 
 // Render discharged data (info de egreso)
 function renderDischargedData(patient) {
-    const circles = Array.from({length: 7}, (_, i) => 
-        i <= patient.ranking ? '●' : '○'
-    ).join(' ');
+    // Variable circles comentada ya que no se usa - 08/08/2025
+    // const circles = Array.from({length: 7}, (_, i) => 
+    //     i <= patient.ranking ? '●' : '○'
+    // ).join(' ');
     
     return `
         <div class="patient-info-row">
             <span class="info-label">Fecha Egreso:</span>
             <span class="info-value">${formatDate(patient.dischargeDate)}</span>
         </div>
+        <!-- ESCALA RANKIN TEMPORALMENTE OCULTA - 08/08/2025
         <div class="patient-info-row">
             <span class="info-label">Escala de Rankin:</span>
             <span class="info-value">${circles} (${patient.ranking})</span>
         </div>
+        -->
         <div class="patient-info-row">
             <span class="info-label">Diagnóstico Egreso:</span>
             <span class="info-value">${patient.dischargeDiagnosis}</span>

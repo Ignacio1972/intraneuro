@@ -45,9 +45,7 @@ async function handleAdmission(e) {
         diagnosis: document.getElementById('diagnosis').value,
         diagnosisText: document.getElementById('diagnosis').value,
         diagnosisDetails: document.getElementById('diagnosisDetails').value,
-        allergies: document.querySelector('input[name="allergies"]:checked').value === 'yes' 
-            ? document.getElementById('allergyDetails').value 
-            : null,
+        allergies: null, // Campo temporalmente deshabilitado - 08/08/2025
         admittedBy: document.getElementById('admittedBy').value,
         status: 'active'
     };
@@ -66,7 +64,7 @@ async function handleAdmission(e) {
         });
         
         if (response && response.patient) {
-            console.log('Paciente guardado en BD:', response);
+     //       console.log('Paciente guardado en BD:', response);
             
             // Crear objeto paciente con datos de respuesta
             const newPatient = {
@@ -91,12 +89,12 @@ async function handleAdmission(e) {
             
             // Reset form
             e.target.reset();
-            document.getElementById('allergyDetails').style.display = 'none';
+            // document.getElementById('allergyDetails').style.display = 'none'; // Deshabilitado - 08/08/2025
             
             // Close modal y actualizar vista
             setTimeout(() => {
                 closeModal('admissionModal');
-                updateDashboardFromAPI();
+                updateDashboard();
                 // Recargar pacientes desde API para mantener sincronía
                 if (typeof loadPatientsFromAPI === 'function') {
                     loadPatientsFromAPI().then(() => renderPatients());
@@ -108,7 +106,7 @@ async function handleAdmission(e) {
             return; // Salir si API funcionó
         }
     } catch (error) {
-        console.log('Error guardando en API, usando fallback local:', error);
+    //    console.log('Error guardando en API, usando fallback local:', error);
     }
     
     // FALLBACK: Lógica original si API falla
@@ -126,12 +124,12 @@ async function handleAdmission(e) {
     
     // Reset form
     e.target.reset();
-    document.getElementById('allergyDetails').style.display = 'none';
+    // document.getElementById('allergyDetails').style.display = 'none'; // Deshabilitado - 08/08/2025
     
     // Close modal
     setTimeout(() => {
         closeModal('admissionModal');
-        updateDashboardFromAPI();
+        updateDashboard();
         renderPatients();
     }, 1500);
 }
@@ -153,7 +151,7 @@ async function checkExistingPatient() {
             }
         }
     } catch (error) {
-        console.log('Error buscando en API, usando datos locales:', error);
+   //     console.log('Error buscando en API, usando datos locales:', error);
     }
     
     // FALLBACK: Buscar en datos locales

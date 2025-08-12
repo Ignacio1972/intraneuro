@@ -1,4 +1,16 @@
 require('dotenv').config();
+
+// Configurar timezone de Chile
+process.env.TZ = 'America/Santiago';
+
+// SOLUCIÓN: Configurar parser para fechas DATE
+const pg = require('pg');
+pg.types.setTypeParser(1082, function(stringValue) {
+    // 1082 = DATE type
+    // Devolver string sin conversión automática a Date
+    return stringValue;
+});
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -36,4 +48,5 @@ app.use((req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`✅ Servidor corriendo en puerto ${PORT}`);
+    console.log('🌍 Timezone configurado:', new Date().toString());
 });

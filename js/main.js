@@ -313,11 +313,22 @@ async function updateDashboardFromAPI() {
     }
 }
 
+// BUSCAR esta función en main.js y REEMPLAZARLA:
+
 // Set date field to today
 function setToday(fieldId) {
     const field = document.getElementById(fieldId);
     if (field) {
-        field.value = new Date().toISOString().split('T')[0];
+        // CORREGIDO: Usar fecha local de Chile
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        
+        field.value = `${year}-${month}-${day}`;
+        
+        console.log('✅ Fecha establecida:', field.value);
+        console.log('📅 Fecha actual del navegador:', today);
     }
 }
 
@@ -332,7 +343,9 @@ function calculateDays(startDate) {
 
 // Format date
 function formatDate(dateString) {
-    const date = new Date(dateString);
+    if (!dateString) return '-';
+    // FIX: Agregar T12:00:00 para evitar problemas de timezone
+    const date = new Date(dateString + 'T12:00:00');
     const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
     return date.toLocaleDateString('es-CL', options);
 }
