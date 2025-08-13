@@ -83,6 +83,12 @@ function openPatientModal(patientId) {
    
    // Open modal
    openModal('patientModal');
+   
+   // Establecer ID del paciente actual para tracking
+   currentPatientId = patientId;
+   
+   // Inicializar tracking de cambios
+   initializeChangeTracking();
 }
 
 // Render discharge form - COMPLETAMENTE MODIFICADO
@@ -307,6 +313,16 @@ async function saveObservationsAndTasks(patientId) {
         
         showToast('Información guardada correctamente');
         
+        // Resetear el estado de cambios no guardados
+        resetUnsavedChanges();
+        
+        // Actualizar valores iniciales
+        initialObservations = observations;
+        initialPendingTasks = pendingTasks;
+        
+        // Actualizar botón
+        updateSaveButtonState();
+        
     } catch (error) {
         console.error('Error guardando información:', error);
         
@@ -316,6 +332,12 @@ async function saveObservationsAndTasks(patientId) {
             patient.observations = observations;
             patient.pendingTasks = pendingTasks;
             showToast('Información guardada localmente');
+            
+            // Resetear el estado de cambios no guardados también en fallback
+            resetUnsavedChanges();
+            initialObservations = observations;
+            initialPendingTasks = pendingTasks;
+            updateSaveButtonState();
         } else {
             showToast('Error al guardar', 'error');
         }

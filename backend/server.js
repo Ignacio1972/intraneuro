@@ -46,7 +46,52 @@ app.use((req, res) => {
 
 // Iniciar servidor
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`✅ Servidor corriendo en puerto ${PORT}`);
     console.log('🌍 Timezone configurado:', new Date().toString());
+});
+
+// Graceful shutdown
+const gracefulShutdown = async (signal) => {
+    console.log(`\n🛑 Recibido ${signal}. Iniciando shutdown graceful...`);
+    
+    // Cerrar servidor HTTP (deja de aceptar nuevas conexiones)
+    server.close(async () => {
+        console.log('✅ Servidor HTTP cerrado');
+        
+        try {
+            // Cerrar conexiones de base de datos
+            if (require('./src/models').sequelize) {
+                await require('./src/models').sequelize.close();
+                console.log('✅ Conexiones de BD cerradas');
+            }
+            
+            console.log('✅ Shutdown completado');
+            process.exit(0);
+        } catch (error) {
+            console.error('❌ Error durante shutdown:', error);
+            process.exit(1);
+        }
+    });
+    
+    // Forzar cierre después de 10 segundos
+    setTimeout(() => {
+        console.error('❌ Forzando shutdown después de timeout');
+        process.exit(1);
+    }, 10000);
+};
+
+// Escuchar señales de shutdown
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// Manejar errores no capturados
+process.on('uncaughtException', (error) => {
+    console.error('❌ Uncaught Exception:', error);
+    gracefulShutdown('UNCAUGHT_EXCEPTION');
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+    gracefulShutdown('UNHANDLED_REJECTION');
 });

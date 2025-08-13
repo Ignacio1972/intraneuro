@@ -30,6 +30,7 @@ CREATE TABLE admissions (
     diagnosis_details TEXT,
     allergies TEXT,
     admitted_by VARCHAR(100) NOT NULL,
+    bed VARCHAR(20),
     
     -- Campos de egreso
     discharge_date DATE,

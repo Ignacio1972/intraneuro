@@ -9,12 +9,23 @@ const sequelize = new Sequelize(
         host: process.env.DB_HOST,
         port: process.env.DB_PORT,
         dialect: 'postgres',
-        logging: false, // Cambiar a console.log en desarrollo
+        logging: process.env.NODE_ENV === 'development' ? console.log : false,
         pool: {
-            max: 5,
-            min: 0,
-            acquire: 30000,
-            idle: 10000
+            max: process.env.NODE_ENV === 'production' ? 20 : 10,
+            min: 2,
+            acquire: 10000, // 10 segundos para obtener conexión
+            idle: 5000,     // 5 segundos antes de cerrar conexión inactiva
+            evict: 1000,    // Verificar conexiones muertas cada segundo
+            handleDisconnects: true
+        },
+        retry: {
+            match: [
+                /ConnectionError/,
+                /ConnectionRefusedError/,
+                /ConnectionTimedOutError/,
+                /TimeoutError/
+            ],
+            max: 3
         }
     }
 );

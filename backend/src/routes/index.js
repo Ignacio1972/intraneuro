@@ -4,14 +4,11 @@ const router = require('express').Router();
 const authRoutes = require('./auth.routes');
 const patientsRoutes = require('./patients.routes');
 const dashboardRoutes = require('./dashboard.routes');
+const healthController = require('../controllers/health.controller');
 
-// Health check endpoint (sin prefijo, será /api/health)
-router.get('/health', (req, res) => {
-    res.json({ 
-        status: 'ok', 
-        timestamp: new Date().toISOString()
-    });
-});
+// Health check endpoints
+router.get('/health', healthController.healthCheck);
+router.get('/health/detailed', healthController.detailedHealth);
 
 // Usar rutas
 router.use('/', authRoutes);  // Login estará en /api/login
