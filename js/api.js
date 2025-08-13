@@ -1,7 +1,7 @@
 // ARCHIVO: /var/www/intraneuro/js/api.js
 
 const API_CONFIG = {
-    baseURL: 'http://localhost:3000/api',
+    baseURL: '/api',
     timeout: 30000,
     
     // Obtener token guardado
