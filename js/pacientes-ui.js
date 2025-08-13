@@ -303,7 +303,8 @@ function getInitials(name) {
 // Función helper para formatear fecha
 function formatDate(dateString) {
     if (!dateString) return 'N/A';
-    const date = new Date(dateString);
+    // FIX: Agregar T12:00:00 para evitar problemas de timezone
+    const date = new Date(dateString + 'T12:00:00');
     return date.toLocaleDateString('es-CL', {
         day: '2-digit',
         month: '2-digit',

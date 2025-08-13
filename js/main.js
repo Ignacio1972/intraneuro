@@ -5,6 +5,12 @@ let currentUser = null;
 let patients = [];
 let viewMode = 'list';
 
+// Variables para trackear cambios no guardados
+let hasUnsavedChanges = false;
+let initialObservations = '';
+let initialPendingTasks = '';
+let currentPatientId = null;
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
     // NUEVO: Prevenir parpadeo - ocultar todo inicialmente
@@ -204,6 +210,46 @@ function closeModal(modalId) {
         return;
     }
     
+    // Verificar cambios no guardados antes de cerrar el modal de paciente
+    if (modalId === 'patientModal' && hasUnsavedChanges) {
+        const saveChanges = confirm(
+            '💾 Tienes cambios no guardados en Historia o Pendientes.\n\n' +
+            '¿Quieres guardar los cambios antes de cerrar?\n\n' +
+            'OK = Guardar y cerrar\n' +
+            'Cancelar = Cerrar sin guardar'
+        );
+        
+        if (saveChanges) {
+            // Guardar cambios automáticamente
+            const patientId = getCurrentPatientId();
+            if (patientId) {
+                // Llamar a la función de guardar de forma asíncrona
+                saveObservationsAndTasks(patientId).then(() => {
+                    // Esperar un momento para mostrar el toast
+                    setTimeout(() => {
+                        // Resetear estado y cerrar
+                        resetUnsavedChanges();
+                        const modal = document.getElementById(modalId);
+                        if (modal) {
+                            modal.classList.remove('active');
+                            setTimeout(() => {
+                                modal.style.display = 'none';
+                            }, 300);
+                        }
+                    }, 800);
+                }).catch((error) => {
+                    console.error('Error guardando cambios:', error);
+                    alert('Error al guardar los cambios. Inténtalo manualmente.');
+                });
+                
+                return; // No continuar con el cierre normal
+            }
+        }
+        
+        // Si cancela o no se puede guardar, resetear el estado
+        resetUnsavedChanges();
+    }
+    
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.remove('active');
@@ -211,6 +257,75 @@ function closeModal(modalId) {
             modal.style.display = 'none';
         }, 300);
     }
+}
+
+// Función para resetear el estado de cambios no guardados
+function resetUnsavedChanges() {
+    hasUnsavedChanges = false;
+    initialObservations = '';
+    initialPendingTasks = '';
+    currentPatientId = null;
+}
+
+// Función para obtener el ID del paciente actual
+function getCurrentPatientId() {
+    return currentPatientId;
+}
+
+// Función para inicializar el tracking de cambios cuando se abre un modal de paciente
+function initializeChangeTracking() {
+    setTimeout(() => {
+        const observationsField = document.getElementById('patientObservations');
+        const pendingTasksField = document.getElementById('patientPendingTasks');
+        
+        if (observationsField && pendingTasksField) {
+            // Guardar valores iniciales
+            initialObservations = observationsField.value;
+            initialPendingTasks = pendingTasksField.value;
+            
+            // Agregar listeners para detectar cambios
+            observationsField.addEventListener('input', checkForUnsavedChanges);
+            pendingTasksField.addEventListener('input', checkForUnsavedChanges);
+            
+            // Resetear estado
+            hasUnsavedChanges = false;
+        }
+    }, 100);
+}
+
+// Función para verificar si hay cambios no guardados
+function checkForUnsavedChanges() {
+    const observationsField = document.getElementById('patientObservations');
+    const pendingTasksField = document.getElementById('patientPendingTasks');
+    
+    if (observationsField && pendingTasksField) {
+        const currentObservations = observationsField.value;
+        const currentPendingTasks = pendingTasksField.value;
+        
+        hasUnsavedChanges = (
+            currentObservations !== initialObservations ||
+            currentPendingTasks !== initialPendingTasks
+        );
+        
+        // Cambiar el color del botón guardar si hay cambios
+        updateSaveButtonState();
+    }
+}
+
+// Función para actualizar el estado visual del botón guardar
+function updateSaveButtonState() {
+    const saveButtons = document.querySelectorAll('[onclick*="saveObservationsAndTasks"]');
+    saveButtons.forEach(button => {
+        if (hasUnsavedChanges) {
+            button.style.backgroundColor = '#e74c3c';
+            button.style.borderColor = '#e74c3c';
+            button.textContent = '💾 Guardar cambios';
+        } else {
+            button.style.backgroundColor = '#2ecc71';
+            button.style.borderColor = '#2ecc71';
+            button.textContent = '✅ Guardado';
+        }
+    });
 }
 
 // View switching

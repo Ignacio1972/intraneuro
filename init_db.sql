@@ -73,7 +73,7 @@ CREATE INDEX idx_admissions_dates ON admissions(admission_date, discharge_date);
 -- Insert default users
 INSERT INTO users (username, password, full_name, role) VALUES
     ('admin', 'admin123', 'Administrador', 'admin'),
-    ('doctor1', 'doctor123', 'Dr. María Silva', 'doctor'),
+    ('doctor1', 'doctor123', 'Intraneuro', 'doctor'),
     ('doctor2', 'doctor123', 'Dr. Carlos Mendoza', 'doctor'),
     ('enfermera', 'enfermera123', 'Enf. Ana Rodríguez', 'nurse');
 
