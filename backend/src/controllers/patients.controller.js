@@ -592,22 +592,59 @@ exports.updatePatient = async (req, res) => {
 };  // ← ESTA LLAVE FALTABA
 
 // Eliminar paciente completo
+// Eliminar paciente completo - VERSIÓN SIMPLE
 exports.deletePatient = async (req, res) => {
+    const sequelize = require('../config/database');
+    const transaction = await sequelize.transaction();
+    
     try {
         const { id } = req.params;
         
         // Buscar paciente
-        const patient = await Patient.findByPk(id);
+        const patient = await Patient.findByPk(id, { transaction });
         if (!patient) {
+            await transaction.rollback();
             return res.status(404).json({ error: 'Paciente no encontrado' });
         }
         
-        // Eliminar (las admisiones, observaciones y tareas se eliminan por cascada)
-        await patient.destroy();
+        // Borrar todo con queries SQL directas para evitar problemas
+        await sequelize.query(
+            `DELETE FROM observations WHERE admission_id IN (SELECT id FROM admissions WHERE patient_id = :patientId)`,
+            { replacements: { patientId: id }, transaction }
+        );
         
+        await sequelize.query(
+            `DELETE FROM pending_tasks WHERE admission_id IN (SELECT id FROM admissions WHERE patient_id = :patientId)`,
+            { replacements: { patientId: id }, transaction }
+        );
+        
+        // Intentar borrar timeline_events solo si existe
+        try {
+            await sequelize.query(
+                `DELETE FROM timeline_events WHERE admission_id IN (SELECT id FROM admissions WHERE patient_id = :patientId)`,
+                { replacements: { patientId: id }, transaction }
+            );
+        } catch (e) {
+            // Ignorar si no existe
+        }
+        
+        await sequelize.query(
+            `DELETE FROM admissions WHERE patient_id = :patientId`,
+            { replacements: { patientId: id }, transaction }
+        );
+        
+        await sequelize.query(
+            `DELETE FROM patients WHERE id = :patientId`,
+            { replacements: { patientId: id }, transaction }
+        );
+        
+        await transaction.commit();
+        
+        console.log(`✅ Paciente ${id} eliminado correctamente con SQL directo`);
         res.json({ message: 'Paciente eliminado correctamente' });
         
     } catch (error) {
+        await transaction.rollback();
         console.error('Error eliminando paciente:', error);
         res.status(500).json({ error: 'Error al eliminar paciente' });
     }
