@@ -45,9 +45,12 @@ app.use((req, res) => {
 });
 
 // Iniciar servidor
+// Iniciar servidor
 const PORT = process.env.PORT || 3000;
-const server = app.listen(PORT, () => {
-    console.log(`✅ Servidor corriendo en puerto ${PORT}`);
+const HOST = process.env.HOST || '0.0.0.0';
+
+const server = app.listen(PORT, HOST, () => {
+    console.log(`✅ Servidor corriendo en ${HOST}:${PORT}`);
     console.log('🌍 Timezone configurado:', new Date().toString());
 });
 
