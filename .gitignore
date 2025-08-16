@@ -1,48 +1,47 @@
-# Archivos de configuración sensibles
-.env
-*.env.local
-*.env.production
-
-# Backups
-*.backup
-*.backup.*
-backups/
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
 
 # Logs
 logs/
 *.log
 
-# Dependencias (cuando implementes el backend)
-node_modules/
-npm-debug.log*
-
-# Base de datos local
-*.sqlite
-*.db
-
-# Archivos del sistema
+# OS
 .DS_Store
 Thumbs.db
 
-# Editor
+# IDE
 .vscode/
 .idea/
-
-# Certificados SSL (nunca subir estos)
-*.pem
-*.key
-*.crt
-
-# Archivos temporales
-*.tmp
 *.swp
+*.swo
 *~
 
-# Backend específico
-backend/.env
-backend/node_modules/
-backend/logs/
-backup/
-*.backup*
-*.bak
+# Environment
 .env
+.env.local
+.env.production
+.env.*.local
+
+# Temporales y backups
+*.tmp
+*.temp
+*.backup
+*.bak
+backup/
+
+# Archivos de desarrollo móvil
+*-mobile.*
+*.mobile
+*.original.*
+mobile-debug.html
+test-*.html
+dev-mobile.sh
+
+# Build
+dist/
+build/
