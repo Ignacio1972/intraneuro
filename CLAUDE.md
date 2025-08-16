@@ -72,6 +72,16 @@ SIEMPRE volver a ./switch-env.sh local después
 .env ESTÁ en Git (decisión consciente del proyecto)
 NO trabajar directo en el VPS de producción
 
+PROCESO OBLIGATORIO ! :
+1. REVISAR → 2. TESTEAR → 3. PROPONER 4. ESPERAR APROBACIÓN → 5. IMPLEMENTAR
+
+Si algo no está 100% claro, DETENERSE, Revisar. Hacer tests.
+Jamas escribir codigo sin antes saber 100% cual es el problema.
+Analizar y revisar hasta encontrar el problema.
+Siempre hacer BACKUP antes de cualquier modificación
+Documentar TODAS las decisiones tomadas
+Probar exhaustivamente antes de desplegar
+
 🚨 TROUBLESHOOTING
 Login falla en local:
 bash./switch-env.sh local
