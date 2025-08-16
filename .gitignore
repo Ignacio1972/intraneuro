@@ -45,3 +45,4 @@ backend/logs/
 backup/
 *.backup*
 *.bak
+.env

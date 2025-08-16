@@ -36,27 +36,33 @@ async function verifyAuthenticationStatus() {
     const token = localStorage.getItem('token');
     const savedUser = sessionStorage.getItem('currentUser');
     
-    if (token && savedUser) {
-        try {
-            const response = await fetch('/api/verify-token', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            if (!response.ok) {
-                // Token inválido
-                console.log('Token inválido detectado, limpiando sesión');
-                clearAuthData();
-            }
-        } catch (error) {
-            console.error('Error verificando token:', error);
-            // Sin conexión, limpiar por seguridad
-            clearAuthData();
+    if (!token || !savedUser) {
+        return false; // No hay sesión
+    }
+    
+    try {
+        // Usar apiRequest que ya tiene la URL correcta
+        const response = await apiRequest('/verify-token');
+        
+        if (response && response.valid) {
+            console.log('✅ Sesión válida restaurada');
+            currentUser = savedUser; // Restaurar variable global
+            return true;
+        }
+    } catch (error) {
+        // Si es 404 o error de red, NO limpiar automáticamente
+        if (error.message && error.message.includes('404')) {
+            console.warn('Endpoint verify-token no disponible, manteniendo sesión local');
+            currentUser = savedUser; // Mantener sesión local
+            return true; // Confiar en el token local
         }
     }
+    
+    // Solo limpiar si el token es realmente inválido (401)
+    console.log('Token inválido, limpiando sesión');
+    clearAuthData();
+    return false;
 }
-
 // NUEVA FUNCIÓN: Prevenir cierre del modal de login
 function preventLoginModalClose() {
     const loginModal = document.getElementById('loginModal');

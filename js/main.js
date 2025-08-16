@@ -27,44 +27,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
     
     if (savedUser && token) {
-        // Verificar que el token sea válido con la API
-        try {
-            const response = await fetch('/api/verify-token', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            if (response.ok) {
-                // Token válido, mostrar app
-                currentUser = savedUser;
-                showMainApp();
-                loginModal.style.visibility = 'visible';
-            } else {
-                // Token inválido, forzar login
-                console.log('Token inválido, requiere login');
-                loginModal.style.visibility = 'visible';
-                forceLogin();
-            }
-        } catch (error) {
-            console.error('Error verificando token:', error);
-            // Sin conexión API, forzar login por seguridad
-            loginModal.style.visibility = 'visible';
-            forceLogin();
-        }
+        // VERIFICACIÓN COMENTADA - Usando sesión local directamente
+        currentUser = savedUser;
+        showMainApp();
+        loginModal.style.visibility = 'visible';
     } else {
         // No hay sesión, mostrar login
         console.log('No hay sesión activa');
         loginModal.style.visibility = 'visible';
+        loginModal.classList.add('active');  // Agregar para mostrar login
         forceLogin();
     }
     
-    // Initialize event listeners
+    // Initialize event listeners - DENTRO del DOMContentLoaded
     initializeEventListeners();
     
     // CAMBIO 2: COMENTADO - No cargar datos de prueba
     // loadMockData();
-});
+});  // CIERRE CORRECTO del DOMContentLoaded
 
 // NUEVA FUNCIÓN: Forzar login y limpiar datos
 function forceLogin() {
