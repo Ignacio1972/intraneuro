@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Conexión INTRANEURO</title>
+</head>
+<body>
+    <h1>Test de Conexión</h1>
+    <button onclick="testAll()">Ejecutar Todos los Tests</button>
+    <pre id="results"></pre>
+    
+    <script>
+    async function testAll() {
+        const results = document.getElementById('results');
+        results.textContent = 'Ejecutando tests...\n\n';
+        
+        // Test 1: Frontend local
+        try {
+            const r1 = await fetch('/');
+            results.textContent += `✅ Frontend local: ${r1.status}\n`;
+        } catch(e) {
+            results.textContent += `❌ Frontend local: ${e.message}\n`;
+        }
+        
+        // Test 2: Backend local HTTP
+        try {
+            const r2 = await fetch('http://localhost:3000/api/verify-token');
+            results.textContent += `✅ Backend HTTP: ${r2.status}\n`;
+        } catch(e) {
+            results.textContent += `❌ Backend HTTP: ${e.message}\n`;
+        }
+        
+        // Test 3: Backend producción
+        try {
+            const r3 = await fetch('https://intraneuro.lat/api/verify-token');
+            results.textContent += `✅ Backend HTTPS Prod: ${r3.status}\n`;
+        } catch(e) {
+            results.textContent += `❌ Backend HTTPS Prod: ${e.message}\n`;
+        }
+        
+        // Test 4: Modo del navegador
+        results.textContent += `\n📍 Protocolo actual: ${window.location.protocol}\n`;
+        results.textContent += `📍 Host actual: ${window.location.host}\n`;
+        results.textContent += `📍 Modo seguro: ${window.isSecureContext}\n`;
+    }
+    </script>
+</body>
+</html>
