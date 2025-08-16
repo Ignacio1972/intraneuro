@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico de Conexión - INTRANEURO</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2c3e50; }
+        .test { 
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background: #f8f9fa;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover { background: #2563eb; }
+        pre { 
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔍 Diagnóstico de Conexión - INTRANEURO</h1>
+        <p>Esta herramienta verifica la conectividad con el sistema.</p>
+        <button onclick="runAllTests()">Ejecutar Diagnóstico Completo</button>
+    </div>
+
+    <div class="card">
+        <h2>Resultados:</h2>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const log = (msg, type = 'test') => {
+            const div = document.createElement('div');
+            div.className = `test ${type}`;
+            div.innerHTML = msg;
+            document.getElementById('results').appendChild(div);
+        };
+
+        async function runAllTests() {
+            document.getElementById('results').innerHTML = '';
+            log('<strong>Iniciando diagnóstico...</strong>');
+            
+            // Info del sistema
+            log(`📱 Navegador: ${navigator.userAgent.substring(0, 100)}...`);
+            log(`🌐 URL actual: ${window.location.href}`);
+            log(`🔒 Conexión segura: ${window.isSecureContext ? 'Sí' : 'No'}`);
+            log(`📡 Estado de red: ${navigator.onLine ? 'En línea' : 'Sin conexión'}`);
+            
+            // Test 1: Frontend
+            try {
+                const t1 = performance.now();
+                const r1 = await fetch('/index.html', { method: 'HEAD' });
+                const time1 = (performance.now() - t1).toFixed(0);
+                log(`✅ Frontend accesible (${r1.status}) - ${time1}ms`, 'success');
+            } catch(e) {
+                log(`❌ Frontend no accesible: ${e.message}`, 'error');
+            }
+            
+            // Test 2: API Health
+            try {
+                const t2 = performance.now();
+                const r2 = await fetch('/api/verify-token');
+                const time2 = (performance.now() - t2).toFixed(0);
+                if (r2.status === 401) {
+                    log(`✅ API respondiendo correctamente (401 esperado) - ${time2}ms`, 'success');
+                } else {
+                    log(`⚠️ API responde con status ${r2.status} - ${time2}ms`, 'warning');
+                }
+            } catch(e) {
+                log(`❌ API no accesible: ${e.message}`, 'error');
+                log(`Posible bloqueo de firewall o CORS`, 'error');
+            }
+            
+            // Test 3: Login endpoint
+            try {
+                const r3 = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: 'test', password: 'test' })
+                });
+                const data = await r3.json();
+                log(`✅ Endpoint de login accesible (${r3.status})`, 'success');
+            } catch(e) {
+                log(`❌ Login endpoint falla: ${e.message}`, 'error');
+            }
+            
+            // Test 4: LocalStorage
+            try {
+                localStorage.setItem('test', 'ok');
+                const val = localStorage.getItem('test');
+                localStorage.removeItem('test');
+                log(`✅ LocalStorage funcionando`, 'success');
+            } catch(e) {
+                log(`❌ LocalStorage bloqueado: ${e.message}`, 'error');
+            }
+            
+            // Test 5: SessionStorage
+            try {
+                sessionStorage.setItem('test', 'ok');
+                const val = sessionStorage.getItem('test');
+                sessionStorage.removeItem('test');
+                log(`✅ SessionStorage funcionando`, 'success');
+            } catch(e) {
+                log(`❌ SessionStorage bloqueado: ${e.message}`, 'error');
+            }
+            
+            // Test 6: Cookies
+            try {
+                document.cookie = "testcookie=ok; path=/";
+                const hasCookie = document.cookie.includes('testcookie');
+                if (hasCookie) {
+                    log(`✅ Cookies funcionando`, 'success');
+                } else {
+                    log(`⚠️ Cookies pueden estar bloqueadas`, 'warning');
+                }
+            } catch(e) {
+                log(`❌ Cookies error: ${e.message}`, 'error');
+            }
+            
+            // Test 7: SSL Certificate
+            if (window.location.protocol === 'https:') {
+                log(`✅ Usando HTTPS`, 'success');
+            } else {
+                log(`⚠️ NO usando HTTPS`, 'warning');
+            }
+            
+            // Resumen
+            log('<strong>📊 Diagnóstico completado</strong>');
+            log('Si hay errores arriba, compartir esta información con soporte técnico.');
+        }
+        
+        // Auto-ejecutar al cargar
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 500);
+        });
+    </script>
+</body>
+</html>
