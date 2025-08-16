@@ -3,36 +3,85 @@ CLAUDE.md - INTRANEURO Development Guide
 INTRANEURO - Sistema de Gestión Hospitalaria para Clínica Psiquiátrica
 Producción: https://intraneurodavila.com (⚠️ NO MODIFICAR DIRECTAMENTE)
 GitHub: https://github.com/Ignacio1972/intraneuro
-📍 Ubicaciones
+
+📍 UBICACIONES
+
 LOCAL: ~/Desarrollo/intraneuro-local/codigo
 VPS: root@148.113.205.115:/var/www/intraneuro
-🔄 FLUJO DE TRABAJO COMPLETO
+RAMA ACTUAL: desarrollo-hrm (no main)
+
+🔄 FLUJOS DE TRABAJO
 1. DESARROLLO LOCAL
 bashcd ~/Desarrollo/intraneuro-local/codigo
 ./switch-env.sh local          # Configura ambiente local
 cd .. && ./start.sh            # Inicia frontend:8080 + backend:3000
-2. ANTES DE COMMIT
-bashcd codigo
-./switch-env.sh prod           # ⚠️ CRÍTICO: Cambiar a producción
-git add .
-git commit -m "feat: descripción"
+2. DESARROLLO MÓVIL
+bash# Iniciar modo móvil
+IP=$(ifconfig | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}' | head -1)
+sed -i '' "s|localhost|$IP|g" js/api.js
+./start.sh
+# Móvil accede a: http://192.168.x.x:8080
+
+# Volver a local
+sed -i '' "s|$IP|localhost|g" js/api.js
+3. COMMIT DESDE MÓVIL
+bash# ANTES del commit - restaurar configuración
+sed -i '' "s|192.168.*.*|localhost|g" js/api.js
+
+# Verificar SIEMPRE
+grep "baseURL" js/api.js      # DEBE ser localhost, NO IP
+
+# Commit normal
+git add [archivos-modificados]  # NUNCA api.js con IP
+git commit -m "feat: mejoras móviles"
+git push origin desarrollo-hrm
+4. DEPLOY A PRODUCCIÓN
+bash# EN LOCAL - Preparar
+cd ~/Desarrollo/intraneuro-local/codigo
+./switch-env.sh prod           # CRÍTICO: Cambiar a prod
+git add js/api.js backend/.env
+git commit -m "config: producción"
+git push origin desarrollo-hrm
+
+# Merge a main
+git checkout main
+git merge desarrollo-hrm
 git push origin main
-./switch-env.sh local          # Volver a local inmediatamente
-3. DEPLOY A PRODUCCIÓN
-bashssh root@148.113.205.115
+
+# EN VPS - Actualizar
+ssh root@148.113.205.115
 cd /var/www/intraneuro
 git pull origin main
 pm2 restart intraneuro-api
+
+# EN LOCAL - Volver a desarrollo
+git checkout desarrollo-hrm
+./switch-env.sh local
 ⚙️ CONFIGURACIÓN DE AMBIENTES
-Archivos de Ambiente
+Archivos .env:
 
-backend/.env.local → development, intraneuro_dev, localhost:8080
-backend/.env.production → production, intraneuro_staging, intraneurodavila.com
-backend/.env → Se copia desde .local o .production según el modo
+backend/.env.local → DB: intraneuro_dev, localhost
+backend/.env.production → DB: intraneuro_staging, producción
+backend/.env → Activo (se copia según modo)
 
-Script de Cambio
-bash./switch-env.sh [local|prod]   # Cambia TANTO api.js como .env
-./switch-env.sh                # Ver estado actual
+Scripts:
+
+./switch-env.sh [local|prod] - Cambia api.js Y .env
+./switch-env.sh - Muestra estado actual
+
+⚠️ REGLAS CRÍTICAS
+NUNCA commitear:
+
+api.js con IP local (192.168.x.x)
+.env con FRONTEND_URL=*
+Archivos *.mobile, *.backup
+
+SIEMPRE antes de commit:
+bashgrep "baseURL" js/api.js      # localhost o /api (NUNCA IP)
+grep "NODE_ENV" backend/.env  # development o production
+Backend: Configurado con HOST=0.0.0.0 para aceptar conexiones móviles automáticamente.
+
+
 🏗️ ESTRUCTURA
 Frontend (JavaScript Vanilla)
 index.html           # Dashboard principal
