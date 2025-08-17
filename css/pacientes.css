@@ -286,10 +286,58 @@
     
     .patients-table {
         font-size: 0.85rem;
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
     }
     
     .patients-table th,
     .patients-table td {
         padding: 0.75rem;
+        white-space: nowrap;
+    }
+}
+
+/* Status Indicators */
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.status-indicator.active .status-dot {
+    background-color: #4caf50;
+}
+
+.status-indicator.scheduled .status-dot {
+    background-color: #2196f3;
+}
+
+.status-text {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Responsive para indicadores */
+@media (max-width: 768px) {
+    .status-indicator {
+        gap: 0.25rem;
+    }
+    
+    .status-dot {
+        width: 10px;
+        height: 10px;
+    }
+    
+    .status-text {
+        font-size: 0.75rem;
     }
 }

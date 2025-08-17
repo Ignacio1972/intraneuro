@@ -44,18 +44,24 @@ function renderPatientTable(activePatients) {
         <table class="patients-table">
             <thead>
                 <tr>
+                    <th>Estado</th>
                     <th>Nombre</th>
                     <th>Edad</th>
                     <th>Días</th>
                     <th>Diagnóstico</th>
                     <th>Cama</th>
                     <th>Ingresado</th>
-                    <th>Estado</th>
                 </tr>
             </thead>
             <tbody>
                 ${activePatients.map(patient => `
                     <tr data-patient-id="${patient.id}">
+                        <td>
+                            <div class="status-indicator ${patient.scheduledDischarge ? 'scheduled' : 'active'}">
+                                <div class="status-dot"></div>
+                                <span class="status-text">${patient.scheduledDischarge ? 'Alta hoy' : 'Activo'}</span>
+                            </div>
+                        </td>
                         <td>${patient.name}</td>
                         <td>${patient.age} años</td>
                         <td>${patient.daysInHospital}</td>
@@ -67,10 +73,6 @@ function renderPatientTable(activePatients) {
                             </span>
                         </td>
                         <td>${formatDate(patient.admissionDate)}</td>
-                        <td>${patient.scheduledDischarge ? 
-                            '<span class="badge-scheduled-table">Alta hoy</span>' : 
-                            '<span class="badge-active">Activo</span>'
-                        }</td>
                     </tr>
                 `).join('')}
             </tbody>
