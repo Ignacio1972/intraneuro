@@ -105,7 +105,8 @@
 
 /* Patient Modal */
 .patient-modal-content {
-    width: 1000px;
+    width: 95%;
+    max-width: 1000px;
     padding: 0;
 }
 
@@ -263,12 +264,7 @@
 }
 
 /* Responsive */
-@media (max-width: 768px) {
-    .modal-content {
-        width: 95%;
-        margin: 1rem;
-    }
-    
+@media (max-width: 992px) {
     .patient-modal-split {
         grid-template-columns: 1fr;
     }
@@ -276,6 +272,41 @@
     .admission-section {
         border-right: none;
         border-bottom: 1px solid var(--border-color);
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        width: 98%;
+        margin: 0.5rem;
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+    
+    .patient-modal-content {
+        width: 98%;
+        max-width: none;
+    }
+    
+    .modal-section {
+        padding: 1.5rem 1rem;
+    }
+    
+    .patient-info-row {
+        flex-direction: column;
+        gap: 0.25rem;
+        padding: 0.5rem 0;
+        align-items: flex-start;
+    }
+    
+    .info-label {
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
+    
+    .info-value {
+        font-size: 0.9rem;
+        margin-left: 0;
     }
     
     .login-content {
