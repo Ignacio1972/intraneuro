@@ -294,6 +294,32 @@
         box-sizing: border-box;
     }
     
+    /* Botón close fijo para mobile */
+    .close {
+        position: fixed !important;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 400;
+        color: #333;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        z-index: 10000;
+    }
+    
+    .close:hover {
+        background: rgba(255, 255, 255, 1);
+        color: #000;
+        transform: scale(1.05);
+    }
+    
     .patient-modal-content {
         width: 100%;
         max-width: 100%;
@@ -313,12 +339,22 @@
     }
     
     .modal-section {
-        padding: 1rem 0.5rem;
+        padding: 1rem 0.25rem !important;
         overflow-x: hidden;
         word-wrap: break-word;
         width: 100%;
         max-width: 100%;
         box-sizing: border-box;
+    }
+    
+    .modal-section * {
+        box-sizing: border-box !important;
+        max-width: 100% !important;
+    }
+    
+    .admission-section {
+        border-right: none !important;
+        border-bottom: 1px solid var(--border-color);
     }
     
     .modal-section h2 {
@@ -370,7 +406,7 @@
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
-        padding: 0.5rem !important;
+        padding: 0.25rem !important;
         margin: 0 !important;
         border: 1px solid var(--border-color) !important;
         border-radius: 4px !important;
