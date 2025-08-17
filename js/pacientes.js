@@ -87,6 +87,9 @@ function openPatientModal(patientId) {
    // Establecer ID del paciente actual para tracking
    currentPatientId = patientId;
    
+   // Agregar entrada al historial para interceptar botón back en mobile
+   history.pushState({patientModal: true, patientId: patientId}, '', '#patient-' + patientId);
+   
    // Inicializar tracking de cambios
    initializeChangeTracking();
 }
@@ -709,3 +712,28 @@ async function editBed(event, patientId) {
        }
    }
 }
+
+// Interceptor del botón back en mobile para modal de pacientes
+window.addEventListener('popstate', function(e) {
+    const patientModal = document.getElementById('patientModal');
+    
+    // Si el modal está abierto y el usuario presiona back
+    if (patientModal && patientModal.classList.contains('active')) {
+        e.preventDefault();
+        
+        // Mostrar confirmación
+        if (confirm('¿Cerrar información del paciente y volver a la lista?')) {
+            // Usuario confirma: cerrar modal
+            closeModal('patientModal');
+            // Limpiar URL
+            history.replaceState(null, '', window.location.pathname);
+        } else {
+            // Usuario cancela: mantener modal abierto
+            const currentState = e.state || {};
+            history.pushState({
+                patientModal: true, 
+                patientId: currentState.patientId || currentPatientId
+            }, '', '#patient-' + (currentState.patientId || currentPatientId));
+        }
+    }
+});

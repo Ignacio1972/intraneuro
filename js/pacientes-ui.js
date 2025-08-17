@@ -102,33 +102,21 @@ function renderAdmissionData(patient) {
     }, 100);
     
     return `
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1rem;">
-            <div class="grid-info-row">
-                <div class="patient-info-row">
-                    <span class="info-label">Nombre:</span>
-                    <span class="info-value">${patient.name}</span>
-                </div>
-            </div>
-            <div class="grid-info-row">
-                <div class="patient-info-row">
-                    <span class="info-label">Edad:</span>
-                    <span class="info-value">${patient.age} años</span>
-                </div>
-            </div>
+        <div class="patient-info-row">
+            <span class="info-label">Nombre:</span>
+            <span class="info-value">${patient.name}</span>
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1rem;">
-            <div class="grid-info-row">
-                <div class="patient-info-row">
-                    <span class="info-label">Teléfono:</span>
-                    <span class="info-value">${patient.phone || 'No registrado'}</span>
-                </div>
-            </div>
-            <div class="grid-info-row">
-                <div class="patient-info-row">
-                    <span class="info-label">RUT:</span>
-                    <span class="info-value">${patient.rut || 'Sin RUT'}</span>
-                </div>
-            </div>
+        <div class="patient-info-row">
+            <span class="info-label">Edad:</span>
+            <span class="info-value">${patient.age} años</span>
+        </div>
+        <div class="patient-info-row">
+            <span class="info-label">Teléfono:</span>
+            <span class="info-value">${patient.phone || 'No registrado'}</span>
+        </div>
+        <div class="patient-info-row">
+            <span class="info-label">RUT:</span>
+            <span class="info-value">${patient.rut || 'Sin RUT'}</span>
         </div>
         <div class="patient-info-row">
             <span class="info-label">Cama:</span>
@@ -163,7 +151,7 @@ function renderAdmissionData(patient) {
                 </label>
                 <textarea 
                     id="patientObservations" 
-                    style="width: 100%; min-height: 120px; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 4px; resize: vertical;"
+                    style="width: 100%; max-width: 100%; min-height: 120px; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 4px; resize: vertical; box-sizing: border-box;"
                     placeholder="Historia clínica del paciente..."
                 >${patient.observations || ''}</textarea>
                 <div id="observationHistory" style="margin-top: 0.5rem; font-size: 0.85em; color: var(--text-secondary);"></div>
@@ -175,7 +163,7 @@ function renderAdmissionData(patient) {
                 </label>
                 <textarea 
                     id="patientPendingTasks" 
-                    style="width: 100%; min-height: 120px; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 4px; resize: vertical;"
+                    style="width: 100%; max-width: 100%; min-height: 120px; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 4px; resize: vertical; box-sizing: border-box;"
                     placeholder="Tareas o procedimientos pendientes..."
                 >${patient.pendingTasks || ''}</textarea>
                 <div id="taskHistory" style="margin-top: 0.5rem; font-size: 0.85em; color: var(--text-secondary);"></div>
@@ -190,6 +178,7 @@ function renderAdmissionData(patient) {
         </div>
     `;
 }
+
 
 // Render discharged data (info de egreso)
 function renderDischargedData(patient) {

@@ -236,6 +236,11 @@ function closeModal(modalId) {
         setTimeout(() => {
             modal.style.display = 'none';
         }, 300);
+        
+        // Limpiar historial cuando se cierra modal de paciente normalmente
+        if (modalId === 'patientModal') {
+            history.replaceState(null, '', window.location.pathname);
+        }
     }
 }
 
