@@ -47,9 +47,10 @@ function renderPatientTable(activePatients) {
                     <th>Estado</th>
                     <th>Nombre</th>
                     <th>Edad</th>
-                    <th>Días</th>
                     <th>Diagnóstico</th>
+                    <th>Médico Tratante</th>
                     <th>Cama</th>
+                    <th>Días</th>
                     <th>Ingresado</th>
                 </tr>
             </thead>
@@ -64,14 +65,20 @@ function renderPatientTable(activePatients) {
                         </td>
                         <td>${patient.name}</td>
                         <td>${patient.age} años</td>
-                        <td>${patient.daysInHospital}</td>
                         <td>${catalogos.getDiagnosisText(patient.diagnosis)}</td>
+                        <td>
+                            <span class="doctor-display" onclick="editAdmittedBy(event, ${patient.id})" 
+                                  style="cursor: pointer; text-decoration: underline; color: var(--primary-color);">
+                                ${patient.admittedBy || 'Sin asignar'}
+                            </span>
+                        </td>
                         <td>
                             <span class="bed-display" onclick="editBed(event, ${patient.id})" 
                                   style="cursor: pointer; text-decoration: underline; color: var(--primary-color);">
                                 ${patient.bed || 'Sin asignar'}
                             </span>
                         </td>
+                        <td>${patient.daysInHospital}</td>
                         <td>${formatDate(patient.admissionDate)}</td>
                     </tr>
                 `).join('')}
@@ -139,7 +146,7 @@ function renderAdmissionData(patient) {
             <span class="info-value">${patient.allergies || 'No presenta'}</span>
         </div>
         <div class="patient-info-row">
-            <span class="info-label">Ingresado por:</span>
+            <span class="info-label">Médico Tratante:</span>
             <span class="info-value">${patient.admittedBy}</span>
         </div>
         

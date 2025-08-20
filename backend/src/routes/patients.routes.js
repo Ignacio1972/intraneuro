@@ -23,6 +23,7 @@ router.get('/:id/admission/tasks', patientsController.getAdmissionTasks);
 router.post('/:id/admission/tasks', patientsController.createTask);
 router.put('/:id/discharge', patientsController.updateDischarge);
 router.put('/:id/bed', patientsController.updateBed);
+router.put('/:id/admittedBy', patientsController.updateAdmittedBy);
 router.put('/:id', patientsController.updatePatient);
 router.delete('/:id', patientsController.deletePatient);
 router.get('/:id', patientsController.getPatientById); // Esta DEBE ir al final

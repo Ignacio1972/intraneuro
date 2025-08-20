@@ -330,6 +330,38 @@ exports.updateBed = async (req, res) => {
     }
 };
 
+// Actualizar médico tratante
+exports.updateAdmittedBy = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { admittedBy } = req.body;
+        
+        // Buscar admisión activa
+        const admission = await Admission.findOne({
+            where: { 
+                patient_id: id,
+                status: 'active'
+            }
+        });
+        
+        if (!admission) {
+            return res.status(404).json({ error: 'Admisión activa no encontrada' });
+        }
+        
+        admission.admitted_by = admittedBy || 'Sin asignar';
+        await admission.save();
+        
+        res.json({ 
+            success: true, 
+            admittedBy: admission.admitted_by 
+        });
+        
+    } catch (error) {
+        console.error('Error actualizando médico tratante:', error);
+        res.status(500).json({ error: 'Error al actualizar médico tratante' });
+    }
+};
+
 // Obtener observaciones de una admisión
 exports.getObservations = async (req, res) => {
     try {

@@ -713,6 +713,40 @@ async function editBed(event, patientId) {
    }
 }
 
+// Editar médico tratante
+async function editAdmittedBy(event, patientId) {
+   event.stopPropagation(); // Evitar abrir el modal del paciente
+   
+   const patient = patients.find(p => p.id === patientId);
+   if (!patient) return;
+   
+   const currentDoctor = patient.admittedBy || 'Sin asignar';
+   
+   const newDoctor = prompt(`Cambiar médico tratante del paciente ${patient.name}:\n\nMédico actual: ${currentDoctor}`, currentDoctor);
+   
+   if (newDoctor !== null && newDoctor !== currentDoctor) {
+       try {
+           const response = await apiRequest(`/patients/${patientId}/admittedBy`, {
+               method: 'PUT',
+               body: JSON.stringify({ admittedBy: newDoctor })
+           });
+           
+           if (response.success) {
+               // Actualizar array local
+               patient.admittedBy = newDoctor || 'Sin asignar';
+               
+               // Re-renderizar pacientes
+               renderPatients();
+               
+               showToast('Médico tratante actualizado correctamente');
+           }
+       } catch (error) {
+           console.error('Error actualizando médico tratante:', error);
+           showToast('Error al actualizar médico tratante', 'error');
+       }
+   }
+}
+
 // Interceptor del botón back en mobile para modal de pacientes
 window.addEventListener('popstate', function(e) {
     const patientModal = document.getElementById('patientModal');
