@@ -3,23 +3,51 @@
 
 // Toggle alta programada
 async function toggleScheduledDischarge(patientId) {
+    const isChecked = document.getElementById('toggleScheduledDischarge').checked;
+    
+    console.log(`[TOGGLE] Patient ${patientId}: ${isChecked ? 'Activando' : 'Desactivando'} alta programada`);
+    
     try {
-        const response = await PacientesAPI.toggleScheduledDischargeAPI(patientId);
+        const response = await PacientesAPI.toggleScheduledDischargeAPI(patientId, isChecked);
         
-        if (response.scheduled !== undefined) {
+        if (response) {
             const patient = patients.find(p => p.id === patientId);
             if (patient) {
-                patient.scheduledDischarge = response.scheduled;
-                renderPatients();
+                // Actualizar el estado local del paciente
+                patient.scheduledDischarge = isChecked;
+                console.log(`[TOGGLE] Array local actualizado`);
                 
-                const message = response.scheduled 
-                    ? '✅ Alta programada activada' 
-                    : '❌ Alta programada desactivada';
+                // Actualizar dashboard inmediatamente
+                if (typeof updateDashboardFromAPI === 'function') {
+                    updateDashboardFromAPI();
+                }
+                
+                // Actualizar badges inmediatamente - esto es CLAVE
+                if (typeof renderPatients === 'function') {
+                    renderPatients();
+                }
+                
+                // Actualizar el texto del toggle en el modal
+                const toggleLabel = document.querySelector('.switch-label span');
+                if (toggleLabel) {
+                    toggleLabel.textContent = isChecked 
+                        ? '✅ Alta programada para HOY' 
+                        : '📅 Programar alta para HOY';
+                    toggleLabel.style.color = isChecked ? '#28a745' : '#666';
+                }
+                
+                // Mostrar notificación toast
+                const message = isChecked 
+                    ? 'Alta activada para hoy' 
+                    : 'Alta desactivada';
                 showToast(message);
             }
         }
     } catch (error) {
-        console.error('Error toggling scheduled discharge:', error);
+        console.error('[TOGGLE] Error actualizando alta programada:', error);
+        
+        // Revertir el toggle si falló
+        document.getElementById('toggleScheduledDischarge').checked = !isChecked;
         showToast('Error al cambiar estado de alta programada', 'error');
     }
 }
@@ -35,7 +63,7 @@ async function processDischarge(event, patientId) {
     const dischargeDate = document.getElementById('dischargeDate')?.value;
     const dischargeDiagnosis = document.getElementById('dischargeDiagnosis')?.value;
     const dischargeDetails = document.getElementById('dischargeDetails')?.value;
-    const ranking = document.getElementById('selectedRating')?.value || 0;
+    // Ranking eliminado del sistema
     const deceased = document.getElementById('patientDeceased')?.checked || false;
     
     // Validaciones
@@ -63,7 +91,7 @@ async function processDischarge(event, patientId) {
             date: dischargeDate,
             diagnosis: dischargeDiagnosis,
             details: dischargeDetails,
-            ranking: parseInt(ranking),
+            // ranking eliminado del sistema
             deceased: deceased,
             dischargedBy: sessionStorage.getItem('currentUser') || 'Usuario'
         };
@@ -97,12 +125,19 @@ function renderDischargeForm(patientId, patient) {
             <h3>Egreso del Paciente</h3>
             
             <!-- Toggle Alta Programada -->
-            <div class="scheduled-discharge-toggle">
-                <button type="button" 
-                        class="btn-scheduled ${scheduledClass}" 
-                        onclick="toggleScheduledDischarge(${patientId})">
-                    ${scheduledText}
-                </button>
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="switch-label" style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-weight: 600; color: ${patient.scheduledDischarge ? '#28a745' : '#666'};">
+                        ${patient.scheduledDischarge ? '✅ Alta programada para HOY' : '📅 Programar alta para HOY'}
+                    </span>
+                    <label class="switch">
+                        <input type="checkbox" 
+                               id="toggleScheduledDischarge" 
+                               ${patient.scheduledDischarge ? 'checked' : ''} 
+                               onchange="toggleScheduledDischarge(${patientId})">
+                        <span class="slider"></span>
+                    </label>
+                </label>
             </div>
             
             <form id="dischargeForm" onsubmit="processDischarge(event, ${patientId})">
@@ -132,21 +167,7 @@ function renderDischargeForm(patientId, patient) {
                               placeholder="Condición del paciente al egreso, recomendaciones, etc."></textarea>
                 </div>
                 
-                <!-- Escala de Rankin -->
-                <div class="form-group">
-                    <label>Escala de Rankin Modificada:</label>
-                    <div class="ranking-scale">
-                        ${[0,1,2,3,4,5,6].map(i => `
-                            <button type="button" class="ranking-btn" 
-                                    onclick="setRating(${i})" 
-                                    data-rating="${i}">
-                                ${i}
-                            </button>
-                        `).join('')}
-                    </div>
-                    <div id="rankingDescription" class="ranking-description"></div>
-                    <input type="hidden" id="selectedRating" value="0">
-                </div>
+                <!-- Escala de Rankin ELIMINADA del sistema -->
                 
                 <!-- Checkbox fallecimiento -->
                 <div class="form-group checkbox-group">
@@ -170,31 +191,10 @@ function renderDischargeForm(patientId, patient) {
     `;
 }
 
-// Establecer calificación Rankin
-function setRating(rating) {
-    // Quitar clase active de todos los botones
-    document.querySelectorAll('.ranking-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    // Agregar clase active al botón seleccionado
-    document.querySelector(`.ranking-btn[data-rating="${rating}"]`)?.classList.add('active');
-    
-    // Guardar valor seleccionado
-    document.getElementById('selectedRating').value = rating;
-    
-    // Mostrar descripción
-    const descriptions = {
-        0: 'Sin síntomas',
-        1: 'Sin incapacidad importante',
-        2: 'Incapacidad leve',
-        3: 'Incapacidad moderada',
-        4: 'Incapacidad moderadamente severa',
-        5: 'Incapacidad severa',
-        6: 'Muerte'
-    };
-    
-    document.getElementById('rankingDescription').textContent = descriptions[rating] || '';
+// Función setRating eliminada - Rankin ya no se usa en el sistema
+// Dejar función vacía para evitar errores
+window.setRating = function(rating) {
+    // Función vacía - Rankin eliminado
 }
 
 // Renderizar datos de paciente egresado (solo lectura)
@@ -220,12 +220,7 @@ function renderDischargedData(patient) {
                 <span class="info-value">${patient.dischargeDetails || 'Sin detalles'}</span>
             </div>
             
-            ${patient.ranking !== undefined ? `
-                <div class="info-row">
-                    <span class="info-label">Escala Rankin:</span>
-                    <span class="info-value">${patient.ranking}</span>
-                </div>
-            ` : ''}
+            <!-- Escala Rankin eliminada -->
             
             ${patient.deceased ? `
                 <div class="alert alert-warning">

@@ -350,22 +350,67 @@ function addShareButton(patientId, patientName) {
 async function sharePatient(patientId, patientName) {
     const shareUrl = `${window.location.origin}/ficha.html?id=${patientId}`;
     
-    if (navigator.share) {
-        try {
-            await navigator.share({
-                title: `Ficha de ${patientName}`,
-                text: `Ficha médica de ${patientName} - INTRANEURO`,
-                url: shareUrl
-            });
-        } catch (err) {
-            console.log('Error compartiendo:', err);
-        }
-    } else {
-        // Fallback: copiar al portapapeles
-        navigator.clipboard.writeText(shareUrl).then(() => {
-            showToast('Enlace copiado al portapapeles');
-        });
-    }
+    // Crear contenido del modal de compartir
+    const modalContent = document.getElementById('shareModalContent');
+    modalContent.innerHTML = `
+        <div style="padding: 20px; text-align: center;">
+            <p style="margin-bottom: 20px;">Compartir ficha de <strong>${patientName}</strong></p>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button onclick="shareViaWhatsApp('${shareUrl}', '${patientName.replace(/'/g, "\\'")}')" 
+                        class="btn btn-success" 
+                        style="width: 100%; background: #25D366; color: white; padding: 12px; border: none; border-radius: 6px; cursor: pointer;">
+                    📱 Compartir por WhatsApp
+                </button>
+                
+                <button onclick="shareViaEmail('${shareUrl}', '${patientName.replace(/'/g, "\\'")}')" 
+                        class="btn btn-info" 
+                        style="width: 100%; background: #0078D4; color: white; padding: 12px; border: none; border-radius: 6px; cursor: pointer;">
+                    ✉️ Enviar por correo
+                </button>
+                
+                <button onclick="copyShareLink('${shareUrl}')" 
+                        class="btn btn-primary" 
+                        style="width: 100%; background: #007bff; color: white; padding: 12px; border: none; border-radius: 6px; cursor: pointer;">
+                    📋 Copiar enlace
+                </button>
+                
+                <button onclick="closeModal('shareModal')" 
+                        class="btn btn-secondary" 
+                        style="width: 100%; background: #6c757d; color: white; padding: 12px; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px;">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Abrir modal
+    openModal('shareModal');
+}
+
+// Compartir por WhatsApp
+function shareViaWhatsApp(url, patientName) {
+    const message = `Ficha médica de ${patientName}:\n${url}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    closeModal('shareModal');
+}
+
+// Compartir por email
+function shareViaEmail(url, patientName) {
+    const subject = `Ficha médica de ${patientName}`;
+    const body = `Hola,\n\nComparto la ficha médica de ${patientName}:\n\n${url}\n\nSaludos`;
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
+    closeModal('shareModal');
+}
+
+// Copiar enlace
+function copyShareLink(url) {
+    navigator.clipboard.writeText(url).then(() => {
+        showToast('Enlace copiado al portapapeles');
+        setTimeout(() => closeModal('shareModal'), 1500);
+    });
 }
 
 // Verificar URL para abrir paciente
@@ -445,3 +490,9 @@ window.sharePatientFromList = function(event, patientId, patientName) {
     event.stopPropagation();
     sharePatient(patientId, patientName);
 };
+
+// Exponer funciones de compartir globalmente
+window.sharePatient = sharePatient;
+window.shareViaWhatsApp = shareViaWhatsApp;
+window.shareViaEmail = shareViaEmail;
+window.copyShareLink = copyShareLink;

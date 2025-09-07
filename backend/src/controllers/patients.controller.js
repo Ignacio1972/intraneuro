@@ -6,6 +6,86 @@ const { Op } = require('sequelize');
 const sequelize = require('../config/database');
 const TimelineEvent = require('../models/timeline-event.model');
 
+// Obtener paciente público (SIN autenticación) para compartir - CORREGIDO
+exports.getPublicPatient = async (req, res) => {
+    try {
+        const patientId = req.params.id;
+        
+        // Busqueda simple sin includes complejos
+        const patient = await Patient.findOne({
+            where: { id: patientId }
+        });
+        
+        if (!patient) {
+            return res.status(404).json({ error: 'Paciente no encontrado' });
+        }
+        
+        // Buscar admisión activa por separado
+        const admission = await Admission.findOne({
+            where: { 
+                patient_id: patientId,
+                status: 'active'
+            }
+        });
+        
+        let observations = '';
+        let pendingTasks = '';
+        
+        if (admission) {
+            // Buscar la última observación
+            const lastObservation = await Observation.findOne({
+                where: { admission_id: admission.id },
+                order: [['created_at', 'DESC']]
+            });
+            
+            if (lastObservation) {
+                observations = lastObservation.observation || '';
+            }
+            
+            // Buscar la tarea pendiente más reciente (no todas)
+            const lastTask = await PendingTask.findOne({
+                where: { 
+                    admission_id: admission.id,
+                    status: 'pending'
+                },
+                order: [['created_at', 'DESC']]
+            });
+            
+            if (lastTask) {
+                // Solo usar la tarea más reciente, limpiar saltos de línea múltiples
+                pendingTasks = lastTask.task
+                    .replace(/\n{2,}/g, '. ') // Reemplazar múltiples saltos de línea con punto
+                    .replace(/\n/g, '. ') // Reemplazar saltos de línea simples con punto
+                    .replace(/\.\s*\./g, '.') // Evitar puntos dobles
+                    .trim();
+            }
+        }
+        
+        // Formatear respuesta con datos completos
+        const publicData = {
+            id: patient.id,
+            name: patient.name,
+            age: patient.age,
+            rut: patient.rut,
+            bed: admission?.bed || 'Sin asignar',
+            admissionDate: admission?.admission_date,
+            diagnosis: admission?.diagnosis_code,
+            diagnosisText: admission?.diagnosis_text,
+            diagnosisDetails: admission?.diagnosis_details || 'presenta intenso dolor de cabeza',
+            admittedBy: admission?.admitted_by,
+            status: admission ? 'active' : 'inactive',
+            observations: observations,
+            pendingTasks: pendingTasks
+        };
+        
+        res.json(publicData);
+        
+    } catch (error) {
+        console.error('Error obteniendo datos completos:', error.message);
+        res.status(500).json({ error: 'Error al obtener paciente' });
+    }
+};
+
 // Obtener tareas pendientes de una admisión
 exports.getAdmissionTasks = async (req, res) => {
     try {
@@ -242,7 +322,7 @@ exports.updateDischarge = async (req, res) => {
         const { 
             scheduledDischarge, 
             dischargeDate,
-            ranking,
+            // ranking, // Campo eliminado del sistema
             dischargeDiagnosis,
             dischargeDetails,
             deceased,
@@ -271,7 +351,7 @@ exports.updateDischarge = async (req, res) => {
             admission.discharge_date = dischargeDate;
             admission.discharge_diagnosis = dischargeDiagnosis;
             admission.discharge_details = dischargeDetails;
-            admission.ranking = ranking;
+            // admission.ranking = ranking; // Campo eliminado
             admission.deceased = deceased;
             admission.discharged_by = dischargedBy;
             admission.scheduled_discharge = false;
@@ -356,6 +436,38 @@ exports.updateAdmittedBy = async (req, res) => {
     } catch (error) {
         console.error('Error actualizando médico tratante:', error);
         res.status(500).json({ error: 'Error al actualizar médico tratante' });
+    }
+};
+
+// Actualizar descripción del diagnóstico
+exports.updateDiagnosisDetails = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { diagnosisDetails } = req.body;
+        
+        // Buscar admisión activa
+        const admission = await Admission.findOne({
+            where: { 
+                patient_id: id,
+                status: 'active'
+            }
+        });
+        
+        if (!admission) {
+            return res.status(404).json({ error: 'Admisión activa no encontrada' });
+        }
+        
+        admission.diagnosis_details = diagnosisDetails || '';
+        await admission.save();
+        
+        res.json({ 
+            success: true, 
+            diagnosisDetails: admission.diagnosis_details 
+        });
+        
+    } catch (error) {
+        console.error('Error actualizando descripción del diagnóstico:', error);
+        res.status(500).json({ error: 'Error al actualizar descripción' });
     }
 };
 
@@ -452,7 +564,7 @@ exports.getArchivedPatients = async (req, res) => {
                 diagnosisText: admission.diagnosis_text,
                 diagnosisDetails: admission.diagnosis_details,
                 bed: admission.bed,
-                ranking: admission.ranking,
+                // ranking: admission.ranking, // Campo eliminado
                 dischargedBy: admission.discharged_by,
                 deceased: admission.deceased
             }))
@@ -499,7 +611,7 @@ exports.getPatientHistory = async (req, res) => {
     dischargeDetails: admission.discharge_details,
     admittedBy: admission.admitted_by,
     bed: admission.bed,
-    ranking: admission.ranking,
+    // ranking: admission.ranking, // Campo eliminado
     status: admission.status,
     dischargedBy: admission.discharged_by,
     deceased: admission.deceased

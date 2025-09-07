@@ -97,10 +97,12 @@ async function updateDiagnosisAPI(patientId, diagnosisCode) {
 }
 
 // Toggle alta programada
-async function toggleScheduledDischargeAPI(patientId) {
+async function toggleScheduledDischargeAPI(patientId, isScheduled) {
     const response = await apiRequest(`/patients/${patientId}/discharge`, {
         method: 'PUT',
-        body: JSON.stringify({ action: 'schedule' })
+        body: JSON.stringify({ 
+            scheduledDischarge: isScheduled 
+        })
     });
     return response;
 }

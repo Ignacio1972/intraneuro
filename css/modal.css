@@ -339,6 +339,7 @@
         min-width: 100%;
         margin: 0;
         padding: 0;
+        padding-top: 70px; /* Espacio para el botón compartir circular */
         overflow-x: hidden;
         box-sizing: border-box;
     }
@@ -352,13 +353,24 @@
     }
     
     .modal-section {
-        padding: 1.5rem 1rem !important;
+        padding: 1.5rem !important;
+        padding-right: 1.5rem !important; /* Asegurar padding derecho completo */
         overflow-x: hidden;
         word-wrap: break-word;
         width: 100%;
         max-width: 100%;
         box-sizing: border-box;
     }
+    
+    /* Arreglar título cortado en móviles */
+    .modal-section h2 {
+        margin-top: 0.5rem !important;
+        padding-top: 0.5rem !important;
+        line-height: 1.4 !important;
+        font-size: 1.2rem !important;
+    }
+    
+    /* Estilos del botón compartir se manejan dinámicamente en JS */
     
     .modal-section * {
         box-sizing: border-box !important;
@@ -369,6 +381,7 @@
         border-right: none !important;
         border-bottom: 2px solid var(--border-color);
         margin-bottom: 1rem;
+        padding-top: 0.5rem !important; /* Evitar que el título se corte */
     }
     
     .discharge-section {
@@ -623,4 +636,113 @@
         width: 95%;
         max-width: 1200px;
     }
+}
+
+/* Switch Toggle Styles - Hermoso diseño original */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+input:checked + .slider {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.switch-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+/* Botón compartir mejorado */
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+/* Toggle Alta Programada */
+.scheduled-discharge-toggle {
+    margin-bottom: 20px;
+}
+
+.btn-scheduled {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-scheduled.inactive {
+    background-color: #f8f9fa;
+    border-color: #28a745;
+    color: #28a745;
+}
+
+.btn-scheduled.inactive:hover {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-scheduled.active {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #000;
+}
+
+.btn-scheduled.active:hover {
+    background-color: #e0a800;
+    border-color: #e0a800;
 }

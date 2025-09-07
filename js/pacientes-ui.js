@@ -33,6 +33,12 @@ function renderPatientCard(patient) {
                         ${patient.bed || 'Sin asignar'}
                     </span>
                 </span>
+                <button onclick="sharePatientFromList(event, ${patient.id}, '${patient.name.replace(/'/g, "\\'")}')" 
+                        class="share-btn-inline" 
+                        title="Compartir ficha"
+                        style="background: none; border: none; cursor: pointer; padding: 5px; opacity: 0.6;">
+                    <span style="font-size: 18px;">📤</span>
+                </button>
             </div>
         </div>
     `;
@@ -52,6 +58,7 @@ function renderPatientTable(activePatients) {
                     <th>Cama</th>
                     <th>Días</th>
                     <th>Ingresado</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -60,7 +67,6 @@ function renderPatientTable(activePatients) {
                         <td>
                             <div class="status-indicator ${patient.scheduledDischarge ? 'scheduled' : 'active'}">
                                 <div class="status-dot"></div>
-                                ${patient.scheduledDischarge ? '<span class="status-text">Alta hoy</span>' : ''}
                             </div>
                         </td>
                         <td>${patient.name}</td>
@@ -80,6 +86,14 @@ function renderPatientTable(activePatients) {
                         </td>
                         <td>${patient.daysInHospital}</td>
                         <td>${formatDate(patient.admissionDate)}</td>
+                        <td>
+                            <button onclick="sharePatientFromList(event, ${patient.id}, '${patient.name.replace(/'/g, "\\'")}')" 
+                                    class="share-btn-inline" 
+                                    title="Compartir ficha"
+                                    style="background: none; border: none; cursor: pointer; padding: 5px; opacity: 0.6; transition: opacity 0.2s;">
+                                <span style="font-size: 18px;">📤</span>
+                            </button>
+                        </td>
                     </tr>
                 `).join('')}
             </tbody>
@@ -164,8 +178,13 @@ function renderAdmissionData(patient) {
             <span class="info-value" id="diagnosis-${patient.id}">${diagnosisText}</span>
         </div>
         <div class="patient-info-row">
-            <span class="info-label">Descripción:</span>
-            <span class="info-value">${patient.diagnosisDetails || 'presenta intenso dolor de cabeza'}</span>
+            <span class="info-label">
+                <span onclick="editDiagnosisDetails(event, ${patient.id})" 
+                      style="cursor: pointer; margin-right: 5px; color: var(--primary-color); font-size: 0.9em;" 
+                      title="Editar descripción">✏️</span>
+                Descripción:
+            </span>
+            <span class="info-value" id="diagnosis-details-${patient.id}">${patient.diagnosisDetails || 'presenta intenso dolor de cabeza'}</span>
         </div>
         <div class="patient-info-row">
             <span class="info-label">
@@ -217,21 +236,11 @@ function renderAdmissionData(patient) {
 // Render discharged data (info de egreso)
 function renderDischargedData(patient) {
     // Variable circles comentada ya que no se usa - 08/08/2025
-    // const circles = Array.from({length: 7}, (_, i) => 
-    //     i <= patient.ranking ? '●' : '○'
-    // ).join(' ');
-    
     return `
         <div class="patient-info-row">
             <span class="info-label">Fecha Egreso:</span>
             <span class="info-value">${formatDate(patient.dischargeDate)}</span>
         </div>
-        <!-- ESCALA RANKIN TEMPORALMENTE OCULTA - 08/08/2025
-        <div class="patient-info-row">
-            <span class="info-label">Escala de Rankin:</span>
-            <span class="info-value">${circles} (${patient.ranking})</span>
-        </div>
-        -->
         <div class="patient-info-row">
             <span class="info-label">Diagnóstico Egreso:</span>
             <span class="info-value">${patient.dischargeDiagnosis}</span>

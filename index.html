@@ -122,6 +122,15 @@ title="Imprimir lista de pacientes">
         </div>
         </div>
 
+    <!-- Share Modal -->
+    <div id="shareModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <span class="close" onclick="closeModal('shareModal')">&times;</span>
+            <h2>Compartir Ficha del Paciente</h2>
+            <div id="shareModalContent"></div>
+        </div>
+    </div>
+
     <!-- New Admission Modal -->
 <!-- New Admission Modal -->
 <div id="admissionModal" class="modal admission-modal">
@@ -219,17 +228,17 @@ title="Imprimir lista de pacientes">
 <script src="js/validaciones.js?v=25"></script>
 <script src="js/data-catalogos.js?v=21"></script>
 <!-- Módulos de UI -->
-<script src="js/pacientes-ui.js?v=21"></script>
+<script src="js/pacientes-ui.js?v=35"></script>
 <!-- Módulos principales -->
 <script src="js/auth.js?v=25"></script>
 <script src="js/ingreso.js?v=21"></script>
 <!-- Main DEBE ir antes de pacientes-refactored para declarar variables globales -->
 <script src="js/main.js?v=27"></script>
 <!-- Módulos refactorizados de pacientes - DESPUÉS de main.js -->
-<script src="js/modules/pacientes/pacientes-api.js?v=28"></script>
+<script src="js/modules/pacientes/pacientes-api.js?v=34"></script>
 <script src="js/modules/pacientes/pacientes-edit.js?v=27"></script>
-<script src="js/modules/pacientes/pacientes-discharge.js?v=26"></script>
-<script src="js/pacientes-refactored.js?v=26"></script>
+<script src="js/modules/pacientes/pacientes-discharge.js?v=36"></script>
+<script src="js/pacientes-refactored.js?v=32"></script>
 
 <!-- Agregar antes del cierre de </body> en index.html -->
 <footer class="app-footer">
