@@ -44,7 +44,7 @@ function renderPatientTable(activePatients) {
         <table class="patients-table">
             <thead>
                 <tr>
-                    <th>Estado</th>
+                    <th></th>
                     <th>Nombre</th>
                     <th>Edad</th>
                     <th>Diagnóstico</th>
@@ -60,7 +60,7 @@ function renderPatientTable(activePatients) {
                         <td>
                             <div class="status-indicator ${patient.scheduledDischarge ? 'scheduled' : 'active'}">
                                 <div class="status-dot"></div>
-                                <span class="status-text">${patient.scheduledDischarge ? 'Alta hoy' : 'Activo'}</span>
+                                ${patient.scheduledDischarge ? '<span class="status-text">Alta hoy</span>' : ''}
                             </div>
                         </td>
                         <td>${patient.name}</td>
@@ -110,50 +110,56 @@ function renderAdmissionData(patient) {
     
     return `
         <div class="patient-info-row">
-            <span class="info-label">Nombre: 
+            <span class="info-label">
                 <span onclick="editPatientName(event, ${patient.id})" 
-                      style="cursor: pointer; margin-left: 5px; color: var(--primary-color); font-size: 0.9em;" 
+                      style="cursor: pointer; margin-right: 5px; color: var(--primary-color); font-size: 0.9em;" 
                       title="Editar nombre">✏️</span>
+                Nombre:
             </span>
-            <span class="info-value">${patient.name}</span>
+            <span class="info-value" id="name-${patient.id}">${patient.name}</span>
         </div>
         <div class="patient-info-row">
-            <span class="info-label">Edad:
+            <span class="info-label">
                 <span onclick="editPatientAge(event, ${patient.id})" 
-                      style="cursor: pointer; margin-left: 5px; color: var(--primary-color); font-size: 0.9em;" 
+                      style="cursor: pointer; margin-right: 5px; color: var(--primary-color); font-size: 0.9em;" 
                       title="Editar edad">✏️</span>
+                Edad:
             </span>
             <span class="info-value" id="age-${patient.id}">${patient.age} años</span>
         </div>
         <div class="patient-info-row">
-            <span class="info-label">RUT:
+            <span class="info-label">
                 <span onclick="editPatientRut(event, ${patient.id})" 
-                      style="cursor: pointer; margin-left: 5px; color: var(--primary-color); font-size: 0.9em;" 
+                      style="cursor: pointer; margin-right: 5px; color: var(--primary-color); font-size: 0.9em;" 
                       title="Editar RUT">✏️</span>
+                RUT:
             </span>
             <span class="info-value" id="rut-${patient.id}">${patient.rut || 'Sin RUT'}</span>
         </div>
         <div class="patient-info-row">
-            <span class="info-label">Cama:
+            <span class="info-label">
                 <span onclick="editPatientBed(event, ${patient.id})" 
-                      style="cursor: pointer; margin-left: 5px; color: var(--primary-color); font-size: 0.9em;" 
+                      style="cursor: pointer; margin-right: 5px; color: var(--primary-color); font-size: 0.9em;" 
                       title="Editar cama">✏️</span>
+                Cama:
             </span>
             <span class="info-value" id="bed-${patient.id}">${patient.bed || 'Sin asignar'}</span>
         </div>
         <div class="patient-info-row">
-            <span class="info-label">Fecha Ingreso:
+            <span class="info-label">
                 <span onclick="editAdmissionDate(event, ${patient.id})" 
-                      style="cursor: pointer; margin-left: 5px; color: var(--primary-color); font-size: 0.9em;" 
+                      style="cursor: pointer; margin-right: 5px; color: var(--primary-color); font-size: 0.9em;" 
                       title="Editar fecha de ingreso">✏️</span>
+                Fecha Ingreso:
             </span>
             <span class="info-value" id="admission-date-${patient.id}">${formatDate(patient.admissionDate)}</span>
         </div>
         <div class="patient-info-row">
-            <span class="info-label">Diagnóstico:
+            <span class="info-label">
                 <span onclick="editPatientDiagnosis(event, ${patient.id})" 
-                      style="cursor: pointer; margin-left: 5px; color: var(--primary-color); font-size: 0.9em;" 
+                      style="cursor: pointer; margin-right: 5px; color: var(--primary-color); font-size: 0.9em;" 
                       title="Editar diagnóstico">✏️</span>
+                Diagnóstico:
             </span>
             <span class="info-value" id="diagnosis-${patient.id}">${diagnosisText}</span>
         </div>
@@ -162,10 +168,11 @@ function renderAdmissionData(patient) {
             <span class="info-value">${patient.diagnosisDetails || 'presenta intenso dolor de cabeza'}</span>
         </div>
         <div class="patient-info-row">
-            <span class="info-label">Médico Tratante:
+            <span class="info-label">
                 <span onclick="editAdmittedBy(event, ${patient.id})" 
-                      style="cursor: pointer; margin-left: 5px; color: var(--primary-color); font-size: 0.9em;" 
+                      style="cursor: pointer; margin-right: 5px; color: var(--primary-color); font-size: 0.9em;" 
                       title="Editar médico tratante">✏️</span>
+                Médico Tratante:
             </span>
             <span class="info-value" id="admitted-by-${patient.id}">${patient.admittedBy}</span>
         </div>

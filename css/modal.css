@@ -280,6 +280,7 @@
     .modal {
         padding: 0;
         overflow-x: hidden;
+        background-color: rgba(0, 0, 0, 0.7);
     }
     
     .modal-content {
@@ -292,6 +293,18 @@
         overflow-x: hidden;
         border-radius: 0;
         box-sizing: border-box;
+        animation: slideUp 0.3s ease;
+    }
+    
+    @keyframes slideUp {
+        from {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
     }
     
     /* Botón close fijo para mobile */
@@ -339,7 +352,7 @@
     }
     
     .modal-section {
-        padding: 1rem 0.25rem !important;
+        padding: 1.5rem 1rem !important;
         overflow-x: hidden;
         word-wrap: break-word;
         width: 100%;
@@ -354,62 +367,72 @@
     
     .admission-section {
         border-right: none !important;
-        border-bottom: 1px solid var(--border-color);
+        border-bottom: 2px solid var(--border-color);
+        margin-bottom: 1rem;
+    }
+    
+    .discharge-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        margin: 0.5rem;
     }
     
     .modal-section h2 {
-        font-size: 1rem;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
+        font-size: 1.1rem;
+        margin-bottom: 1.2rem;
+        padding-bottom: 0.75rem;
         word-wrap: break-word;
         overflow-wrap: break-word;
+        border-bottom: 2px solid var(--border-color);
     }
     
     .patient-info-row {
         display: block;
         width: 100%;
         max-width: 100%;
-        padding: 0.4rem 0;
+        padding: 1rem 0.75rem;
         margin: 0;
         overflow-x: hidden;
         word-wrap: break-word;
         box-sizing: border-box;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     }
     
     .info-label {
         display: block;
-        font-weight: 700;
-        font-size: 0.75rem;
+        font-weight: 600;
+        font-size: 0.85rem;
         color: var(--text-secondary);
-        margin-bottom: 0.2rem;
+        margin-bottom: 0.3rem;
         word-wrap: break-word;
         overflow-wrap: break-word;
     }
     
     .info-value {
         display: block;
-        font-size: 0.85rem;
+        font-size: 0.95rem;
         margin: 0;
-        padding: 0;
+        padding: 0.2rem 0;
         word-wrap: break-word;
         overflow-wrap: break-word;
         max-width: 100%;
         width: 100%;
         white-space: normal;
-        line-height: 1.3;
+        line-height: 1.4;
+        color: var(--text-primary);
     }
     
     /* Textareas específicas que causan overflow */
     #patientObservations,
     #patientPendingTasks,
     textarea {
-        width: 100% !important;
-        max-width: 100% !important;
+        width: calc(100% - 1rem) !important;
+        max-width: calc(100% - 1rem) !important;
         min-width: 0 !important;
-        padding: 0.25rem !important;
-        margin: 0 !important;
+        padding: 0.75rem !important;
+        margin: 0.5rem !important;
         border: 1px solid var(--border-color) !important;
-        border-radius: 4px !important;
+        border-radius: 6px !important;
         box-sizing: border-box !important;
         resize: vertical !important;
         font-size: 14px !important;
@@ -421,6 +444,32 @@
     .login-content {
         width: 90%;
         max-width: 400px;
+    }
+    
+    /* Botón de guardar observaciones/tareas en móvil */
+    .btn.btn-primary {
+        width: 100% !important;
+        padding: 1rem !important;
+        font-size: 1rem !important;
+        margin-top: 1rem;
+        border-radius: 8px;
+    }
+    
+    /* Mejorar inputs y selects en móviles */
+    .discharge-form input,
+    .discharge-form select,
+    .discharge-form textarea {
+        width: 100% !important;
+        padding: 0.75rem !important;
+        font-size: 16px !important; /* Previene zoom en iOS */
+        border-radius: 6px !important;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Toggle de alta programada */
+    .form-group[style*="background: #f0f8ff"] {
+        margin: 0.5rem !important;
+        border-radius: 12px !important;
     }
 }
 /* Modal de admisión más grande */
