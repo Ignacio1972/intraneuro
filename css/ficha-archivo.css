@@ -335,6 +335,26 @@
     font-size: 0.8rem;
 }
 
+/* Estilos para campos editables en admisiones */
+.admission-content .form-control {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.admission-content .edit-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-start;
+    margin-top: 1rem;
+}
+
+.admission-content select.form-control {
+    max-width: 100%;
+}
+
 /* Loading */
 .loading-overlay {
     position: fixed;

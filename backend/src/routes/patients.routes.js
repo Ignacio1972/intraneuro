@@ -14,6 +14,7 @@ router.post('/', patientsController.createPatient);
 
 // Rutas para acceder por admissionId directamente (para pacientes archivados)
 router.get('/admission/:admissionId/observations', patientsController.getObservationsByAdmission);
+router.put('/admission/:admissionId', patientsController.updateArchivedAdmission);
 
 // Rutas existentes por patientId
 router.get('/:id/history', patientsController.getPatientHistory);
@@ -21,6 +22,7 @@ router.get('/:id/admission/observations', patientsController.getObservations);
 router.post('/:id/admission/observations', patientsController.createObservation);
 router.get('/:id/admission/tasks', patientsController.getAdmissionTasks);
 router.post('/:id/admission/tasks', patientsController.createTask);
+router.put('/:id/admission', patientsController.updateActiveAdmission);
 router.put('/:id/discharge', patientsController.updateDischarge);
 router.put('/:id/bed', patientsController.updateBed);
 router.put('/:id/admittedBy', patientsController.updateAdmittedBy);

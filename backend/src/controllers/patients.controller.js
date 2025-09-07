@@ -97,13 +97,11 @@ exports.getActivePatients = async (req, res) => {
                 name: p.name,
                 age: p.age,
                 rut: p.rut,
-                phone: p.phone,
                 bed: admission.bed || 'Sin asignar',
                 admissionDate: admission.admission_date,
                 diagnosis: admission.diagnosis_code,
                 diagnosisText: admission.diagnosis_text,
                 diagnosisDetails: admission.diagnosis_details,
-                allergies: admission.allergies,
                 admittedBy: admission.admitted_by,
                 status: 'active',
                 daysInHospital: calculateDays(admission.admission_date),
@@ -149,9 +147,9 @@ exports.createPatient = async (req, res) => {
     
     try {
         const {
-            name, age, rut, phone, bed,
+            name, age, rut, bed,
             admissionDate, diagnosis, diagnosisText, 
-            diagnosisDetails, allergies, admittedBy
+            diagnosisDetails, admittedBy
         } = req.body;
         
         // Buscar si existe paciente con ese RUT
@@ -163,7 +161,7 @@ exports.createPatient = async (req, res) => {
         // Si no existe, crear
         if (!patient) {
             patient = await Patient.create({
-                name, age, rut, phone
+                name, age, rut
             }, { transaction });
         }
         
@@ -175,7 +173,6 @@ exports.createPatient = async (req, res) => {
             diagnosis_code: diagnosis,
             diagnosis_text: diagnosisText,
             diagnosis_details: diagnosisDetails,
-            allergies: allergies,
             admitted_by: admittedBy,
             status: 'active'
         }, { transaction });
@@ -447,7 +444,6 @@ exports.getArchivedPatients = async (req, res) => {
             name: patient.name,
             age: patient.age,
             rut: patient.rut,
-            phone: patient.phone,
             admissions: patient.admissions.map(admission => ({
                 admissionId: admission.id,
                 admissionDate: admission.admission_date,
@@ -455,7 +451,6 @@ exports.getArchivedPatients = async (req, res) => {
                 diagnosis: admission.diagnosis_code,
                 diagnosisText: admission.diagnosis_text,
                 diagnosisDetails: admission.diagnosis_details,
-                allergies: admission.allergies,
                 bed: admission.bed,
                 ranking: admission.ranking,
                 dischargedBy: admission.discharged_by,
@@ -493,7 +488,6 @@ exports.getPatientHistory = async (req, res) => {
             name: patient.name,
             age: patient.age,
             rut: patient.rut,
-            phone: patient.phone,
     admissions: patient.admissions.map(admission => ({
     admissionId: admission.id,
     admissionDate: admission.admission_date,
@@ -501,13 +495,12 @@ exports.getPatientHistory = async (req, res) => {
     diagnosis: admission.diagnosis_code,
     diagnosisText: admission.diagnosis_text,
     diagnosisDetails: admission.diagnosis_details,
-    dischargeDiagnosis: admission.discharge_diagnosis,  // ← ESTA ES LA LÍNEA QUE HAY QUE AGREGAR
-    dischargeDetails: admission.discharge_details,      // ← ESTA YA EXISTE
-    allergies: admission.allergies,
+    dischargeDiagnosis: admission.discharge_diagnosis,
+    dischargeDetails: admission.discharge_details,
+    admittedBy: admission.admitted_by,
     bed: admission.bed,
     ranking: admission.ranking,
     status: admission.status,
-    admittedBy: admission.admitted_by,
     dischargedBy: admission.discharged_by,
     deceased: admission.deceased
 }))
@@ -596,7 +589,7 @@ exports.getObservationsByAdmission = async (req, res) => {
 exports.updatePatient = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, rut, age, phone } = req.body;
+        const { name, rut, age } = req.body;
         
         const patient = await Patient.findByPk(id);
         
@@ -608,7 +601,6 @@ exports.updatePatient = async (req, res) => {
         if (name !== undefined) patient.name = name;
         if (rut !== undefined) patient.rut = rut;
         if (age !== undefined) patient.age = age;
-        if (phone !== undefined) patient.phone = phone;
         
         await patient.save();
         
@@ -622,6 +614,84 @@ exports.updatePatient = async (req, res) => {
         res.status(500).json({ error: 'Error al actualizar paciente' });
     }
 };  // ← ESTA LLAVE FALTABA
+
+// Actualizar admisión activa (fecha de ingreso y diagnóstico)
+exports.updateActiveAdmission = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { 
+            admission_date,
+            diagnosis_code,
+            diagnosis_text
+        } = req.body;
+        
+        // Buscar admisión activa del paciente
+        const admission = await Admission.findOne({
+            where: { 
+                patient_id: id,
+                status: 'active'
+            }
+        });
+        
+        if (!admission) {
+            return res.status(404).json({ error: 'Admisión activa no encontrada' });
+        }
+        
+        // Actualizar solo campos enviados
+        if (admission_date !== undefined) admission.admission_date = admission_date;
+        if (diagnosis_code !== undefined) admission.diagnosis_code = diagnosis_code;
+        if (diagnosis_text !== undefined) admission.diagnosis_text = diagnosis_text;
+        
+        await admission.save();
+        
+        res.json({
+            success: true,
+            admission
+        });
+        
+    } catch (error) {
+        console.error('Error actualizando admisión activa:', error);
+        res.status(500).json({ error: 'Error al actualizar admisión' });
+    }
+};
+
+// Actualizar admisión archivada
+exports.updateArchivedAdmission = async (req, res) => {
+    try {
+        const { admissionId } = req.params;
+        const { 
+            admission_date,
+            diagnosis_code,
+            diagnosis_text,
+            admitted_by,
+            bed
+        } = req.body;
+        
+        const admission = await Admission.findByPk(admissionId);
+        
+        if (!admission) {
+            return res.status(404).json({ error: 'Admisión no encontrada' });
+        }
+        
+        // Actualizar solo campos enviados
+        if (admission_date !== undefined) admission.admission_date = admission_date;
+        if (diagnosis_code !== undefined) admission.diagnosis_code = diagnosis_code;
+        if (diagnosis_text !== undefined) admission.diagnosis_text = diagnosis_text;
+        if (admitted_by !== undefined) admission.admitted_by = admitted_by;
+        if (bed !== undefined) admission.bed = bed;
+        
+        await admission.save();
+        
+        res.json({
+            success: true,
+            admission
+        });
+        
+    } catch (error) {
+        console.error('Error actualizando admisión:', error);
+        res.status(500).json({ error: 'Error al actualizar admisión' });
+    }
+};
 
 // Eliminar paciente completo
 // Eliminar paciente completo - VERSIÓN SIMPLE

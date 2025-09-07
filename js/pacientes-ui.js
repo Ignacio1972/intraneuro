@@ -110,44 +110,64 @@ function renderAdmissionData(patient) {
     
     return `
         <div class="patient-info-row">
-            <span class="info-label">Nombre:</span>
+            <span class="info-label">Nombre: 
+                <span onclick="editPatientName(event, ${patient.id})" 
+                      style="cursor: pointer; margin-left: 5px; color: var(--primary-color); font-size: 0.9em;" 
+                      title="Editar nombre">✏️</span>
+            </span>
             <span class="info-value">${patient.name}</span>
         </div>
         <div class="patient-info-row">
-            <span class="info-label">Edad:</span>
-            <span class="info-value">${patient.age} años</span>
+            <span class="info-label">Edad:
+                <span onclick="editPatientAge(event, ${patient.id})" 
+                      style="cursor: pointer; margin-left: 5px; color: var(--primary-color); font-size: 0.9em;" 
+                      title="Editar edad">✏️</span>
+            </span>
+            <span class="info-value" id="age-${patient.id}">${patient.age} años</span>
         </div>
         <div class="patient-info-row">
-            <span class="info-label">Teléfono:</span>
-            <span class="info-value">${patient.phone || 'No registrado'}</span>
+            <span class="info-label">RUT:
+                <span onclick="editPatientRut(event, ${patient.id})" 
+                      style="cursor: pointer; margin-left: 5px; color: var(--primary-color); font-size: 0.9em;" 
+                      title="Editar RUT">✏️</span>
+            </span>
+            <span class="info-value" id="rut-${patient.id}">${patient.rut || 'Sin RUT'}</span>
         </div>
         <div class="patient-info-row">
-            <span class="info-label">RUT:</span>
-            <span class="info-value">${patient.rut || 'Sin RUT'}</span>
+            <span class="info-label">Cama:
+                <span onclick="editPatientBed(event, ${patient.id})" 
+                      style="cursor: pointer; margin-left: 5px; color: var(--primary-color); font-size: 0.9em;" 
+                      title="Editar cama">✏️</span>
+            </span>
+            <span class="info-value" id="bed-${patient.id}">${patient.bed || 'Sin asignar'}</span>
         </div>
         <div class="patient-info-row">
-            <span class="info-label">Cama:</span>
-            <span class="info-value">${patient.bed || 'Sin asignar'}</span>
+            <span class="info-label">Fecha Ingreso:
+                <span onclick="editAdmissionDate(event, ${patient.id})" 
+                      style="cursor: pointer; margin-left: 5px; color: var(--primary-color); font-size: 0.9em;" 
+                      title="Editar fecha de ingreso">✏️</span>
+            </span>
+            <span class="info-value" id="admission-date-${patient.id}">${formatDate(patient.admissionDate)}</span>
         </div>
         <div class="patient-info-row">
-            <span class="info-label">Fecha Ingreso:</span>
-            <span class="info-value">${formatDate(patient.admissionDate)}</span>
-        </div>
-        <div class="patient-info-row">
-            <span class="info-label">Diagnóstico:</span>
-            <span class="info-value">${diagnosisText}</span>
+            <span class="info-label">Diagnóstico:
+                <span onclick="editPatientDiagnosis(event, ${patient.id})" 
+                      style="cursor: pointer; margin-left: 5px; color: var(--primary-color); font-size: 0.9em;" 
+                      title="Editar diagnóstico">✏️</span>
+            </span>
+            <span class="info-value" id="diagnosis-${patient.id}">${diagnosisText}</span>
         </div>
         <div class="patient-info-row">
             <span class="info-label">Descripción:</span>
             <span class="info-value">${patient.diagnosisDetails || 'presenta intenso dolor de cabeza'}</span>
         </div>
         <div class="patient-info-row">
-            <span class="info-label">Alergias:</span>
-            <span class="info-value">${patient.allergies || 'No presenta'}</span>
-        </div>
-        <div class="patient-info-row">
-            <span class="info-label">Médico Tratante:</span>
-            <span class="info-value">${patient.admittedBy}</span>
+            <span class="info-label">Médico Tratante:
+                <span onclick="editAdmittedBy(event, ${patient.id})" 
+                      style="cursor: pointer; margin-left: 5px; color: var(--primary-color); font-size: 0.9em;" 
+                      title="Editar médico tratante">✏️</span>
+            </span>
+            <span class="info-value" id="admitted-by-${patient.id}">${patient.admittedBy}</span>
         </div>
         
         <!-- NUEVA SECCIÓN: Historia y Pendientes -->

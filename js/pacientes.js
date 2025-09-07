@@ -375,7 +375,7 @@ async function exportActivePatientsToExcel() {
             ['LISTADO DE PACIENTES ACTIVOS - INTRANEURO'],
             ['Fecha de generación:', new Date().toLocaleString('es-CL')],
             [''],
-            ['Fecha Ingreso', 'Nombre Paciente', 'Cama', 'Edad', 'Alergias', 'Diagnóstico', 'Descripción', 'Historia', 'Pendientes', 'Estado', 'Días Hospitalizados']
+            ['Fecha Ingreso', 'Nombre Paciente', 'Cama', 'Edad', 'Diagnóstico', 'Descripción', 'Historia', 'Pendientes', 'Estado', 'Días Hospitalizados']
         ];
         
         // Cargar datos completos de cada paciente
@@ -460,7 +460,6 @@ async function exportActivePatientsToExcel() {
                 patient.name || '-',
                 patient.bed || 'Sin asignar',
                 patient.age || '-',
-                patient.allergies || 'Sin alergias',
                 diagnosticoFormateado,
                 descripcionFormateada,
                 historia,
@@ -744,6 +743,312 @@ async function editAdmittedBy(event, patientId) {
            console.error('Error actualizando médico tratante:', error);
            showToast('Error al actualizar médico tratante', 'error');
        }
+   }
+}
+
+// Editar edad del paciente
+async function editPatientAge(event, patientId) {
+   event.stopPropagation();
+   
+   const patient = patients.find(p => p.id === patientId);
+   if (!patient) return;
+   
+   const currentAge = patient.age;
+   const newAge = prompt(
+       `Editar edad del paciente:\n\n` +
+       `Edad actual: ${currentAge} años\n\n` +
+       `Ingrese la nueva edad (1-120):`,
+       currentAge
+   );
+   
+   if (newAge !== null && newAge !== '') {
+       const ageNum = parseInt(newAge);
+       
+       if (isNaN(ageNum) || ageNum < 1 || ageNum > 120) {
+           showToast('La edad debe ser un número entre 1 y 120', 'error');
+           return;
+       }
+       
+       try {
+           const response = await apiRequest(`/patients/${patientId}`, {
+               method: 'PUT',
+               body: JSON.stringify({ age: ageNum })
+           });
+           
+           if (response.success) {
+               patient.age = ageNum;
+               document.getElementById(`age-${patientId}`).textContent = `${ageNum} años`;
+               renderPatients();
+               showToast('Edad actualizada correctamente');
+           }
+       } catch (error) {
+           console.error('Error actualizando edad:', error);
+           showToast('Error al actualizar edad', 'error');
+       }
+   }
+}
+
+// Editar RUT del paciente
+async function editPatientRut(event, patientId) {
+   event.stopPropagation();
+   
+   const patient = patients.find(p => p.id === patientId);
+   if (!patient) return;
+   
+   const currentRut = patient.rut || '';
+   const newRut = prompt(
+       `Editar RUT del paciente:\n\n` +
+       `RUT actual: ${currentRut || 'Sin RUT'}\n\n` +
+       `Ingrese el nuevo RUT (formato: 12345678-9):`,
+       currentRut
+   );
+   
+   if (newRut !== null) {
+       // Permitir RUT vacío o validar formato
+       if (newRut && !validarRUT(newRut)) {
+           showToast('RUT inválido. Use formato 12345678-9', 'error');
+           return;
+       }
+       
+       try {
+           const response = await apiRequest(`/patients/${patientId}`, {
+               method: 'PUT',
+               body: JSON.stringify({ rut: newRut || null })
+           });
+           
+           if (response.success) {
+               patient.rut = newRut || null;
+               document.getElementById(`rut-${patientId}`).textContent = newRut || 'Sin RUT';
+               renderPatients();
+               showToast('RUT actualizado correctamente');
+           }
+       } catch (error) {
+           console.error('Error actualizando RUT:', error);
+           showToast('Error al actualizar RUT', 'error');
+       }
+   }
+}
+
+// Editar cama del paciente
+async function editPatientBed(event, patientId) {
+   event.stopPropagation();
+   
+   const patient = patients.find(p => p.id === patientId);
+   if (!patient) return;
+   
+   const currentBed = patient.bed || '';
+   const newBed = prompt(
+       `Editar cama del paciente:\n\n` +
+       `Cama actual: ${currentBed || 'Sin asignar'}\n\n` +
+       `Ingrese la nueva cama:`,
+       currentBed
+   );
+   
+   if (newBed !== null) {
+       try {
+           const response = await apiRequest(`/patients/${patientId}/bed`, {
+               method: 'PUT',
+               body: JSON.stringify({ bed: newBed || 'Sin asignar' })
+           });
+           
+           if (response.success) {
+               patient.bed = newBed || 'Sin asignar';
+               document.getElementById(`bed-${patientId}`).textContent = newBed || 'Sin asignar';
+               renderPatients();
+               showToast('Cama actualizada correctamente');
+           }
+       } catch (error) {
+           console.error('Error actualizando cama:', error);
+           showToast('Error al actualizar cama', 'error');
+       }
+   }
+}
+
+// Editar fecha de ingreso
+async function editAdmissionDate(event, patientId) {
+   event.stopPropagation();
+   
+   const patient = patients.find(p => p.id === patientId);
+   if (!patient) return;
+   
+   const currentDate = patient.admissionDate.split('T')[0];
+   const newDate = prompt(
+       `Editar fecha de ingreso:\n\n` +
+       `Fecha actual: ${formatDate(patient.admissionDate)}\n\n` +
+       `Ingrese la nueva fecha (YYYY-MM-DD):`,
+       currentDate
+   );
+   
+   if (newDate !== null && newDate !== '') {
+       // Validar formato de fecha
+       const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+       if (!dateRegex.test(newDate)) {
+           showToast('Formato de fecha inválido. Use YYYY-MM-DD', 'error');
+           return;
+       }
+       
+       try {
+           const response = await apiRequest(`/patients/${patientId}/admission`, {
+               method: 'PUT',
+               body: JSON.stringify({ admission_date: newDate })
+           });
+           
+           if (response.success) {
+               patient.admissionDate = newDate;
+               document.getElementById(`admission-date-${patientId}`).textContent = formatDate(newDate);
+               // Recalcular días en hospital
+               patient.daysInHospital = calculateDaysInHospital(newDate);
+               renderPatients();
+               showToast('Fecha de ingreso actualizada correctamente');
+           }
+       } catch (error) {
+           console.error('Error actualizando fecha:', error);
+           showToast('Error al actualizar fecha de ingreso', 'error');
+       }
+   }
+}
+
+// Editar diagnóstico
+async function editPatientDiagnosis(event, patientId) {
+   event.stopPropagation();
+   
+   const patient = patients.find(p => p.id === patientId);
+   if (!patient) return;
+   
+   const currentDiagnosis = patient.diagnosis || '';
+   const newDiagnosis = prompt(
+       `Editar diagnóstico del paciente:\n\n` +
+       `Diagnóstico actual: ${catalogos.getDiagnosisText(currentDiagnosis)}\n\n` +
+       `Ingrese el nuevo diagnóstico:`,
+       currentDiagnosis
+   );
+   
+   if (newDiagnosis !== null && newDiagnosis !== '') {
+       try {
+           const response = await apiRequest(`/patients/${patientId}/admission`, {
+               method: 'PUT',
+               body: JSON.stringify({ 
+                   diagnosis_code: newDiagnosis,
+                   diagnosis_text: newDiagnosis
+               })
+           });
+           
+           if (response.success) {
+               patient.diagnosis = newDiagnosis;
+               patient.diagnosisText = newDiagnosis;
+               document.getElementById(`diagnosis-${patientId}`).textContent = newDiagnosis;
+               renderPatients();
+               showToast('Diagnóstico actualizado correctamente');
+           }
+       } catch (error) {
+           console.error('Error actualizando diagnóstico:', error);
+           showToast('Error al actualizar diagnóstico', 'error');
+       }
+   }
+}
+
+// Editar médico tratante - función mejorada
+async function editAdmittedBy(event, patientId) {
+   event.stopPropagation();
+   
+   const patient = patients.find(p => p.id === patientId);
+   if (!patient) return;
+   
+   const currentDoctor = patient.admittedBy || '';
+   const newDoctor = prompt(
+       `Editar médico tratante:\n\n` +
+       `Médico actual: ${currentDoctor || 'Sin asignar'}\n\n` +
+       `Ingrese el nombre del nuevo médico tratante:`,
+       currentDoctor
+   );
+   
+   if (newDoctor !== null && newDoctor !== '') {
+       try {
+           const response = await apiRequest(`/patients/${patientId}/admittedBy`, {
+               method: 'PUT',
+               body: JSON.stringify({ admittedBy: newDoctor })
+           });
+           
+           if (response.success) {
+               patient.admittedBy = newDoctor;
+               document.getElementById(`admitted-by-${patientId}`).textContent = newDoctor;
+               renderPatients();
+               showToast('Médico tratante actualizado correctamente');
+           }
+       } catch (error) {
+           console.error('Error actualizando médico:', error);
+           showToast('Error al actualizar médico tratante', 'error');
+       }
+   }
+}
+
+// Editar nombre del paciente
+async function editPatientName(event, patientId) {
+   event.stopPropagation(); // Evitar cerrar o interferir con el modal
+   
+   const patient = patients.find(p => p.id === patientId);
+   if (!patient) return;
+   
+   const currentName = patient.name;
+   
+   // Prompt para nuevo nombre con validaciones claras
+   const newName = prompt(
+       `Editar nombre del paciente:\n\n` +
+       `Nombre actual: ${currentName}\n\n` +
+       `Ingrese el nuevo nombre (mínimo 3 caracteres):`,
+       currentName
+   );
+   
+   // Validaciones
+   if (newName === null) return; // Canceló
+   
+   const trimmedName = newName.trim();
+   
+   if (trimmedName === currentName) return; // Sin cambios
+   
+   if (trimmedName.length < 3) {
+       showToast('El nombre debe tener al menos 3 caracteres', 'error');
+       return;
+   }
+   
+   if (trimmedName.length > 100) {
+       showToast('El nombre no puede superar los 100 caracteres', 'error');
+       return;
+   }
+   
+   // Validar que solo contenga letras, espacios y caracteres latinos
+   if (!/^[a-zA-ZÀ-ÿÑñ\s]+$/.test(trimmedName)) {
+       showToast('El nombre solo puede contener letras y espacios', 'error');
+       return;
+   }
+   
+   try {
+       // Llamar al endpoint updatePatient existente
+       const response = await apiRequest(`/patients/${patientId}`, {
+           method: 'PUT',
+           body: JSON.stringify({ name: trimmedName })
+       });
+       
+       if (response.success) {
+           // Actualizar en memoria local
+           patient.name = trimmedName;
+           
+           // Re-renderizar el modal con los datos actualizados
+           const admissionData = document.getElementById('admissionData');
+           if (admissionData) {
+               admissionData.innerHTML = renderAdmissionData(patient);
+           }
+           
+           // Re-renderizar la lista de pacientes
+           renderPatients();
+           
+           showToast('Nombre actualizado correctamente', 'success');
+       } else {
+           showToast('Error al actualizar el nombre', 'error');
+       }
+   } catch (error) {
+       console.error('Error actualizando nombre:', error);
+       showToast('Error al actualizar el nombre del paciente', 'error');
    }
 }
 
