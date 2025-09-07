@@ -33,19 +33,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// MODIFICADO: Validate phone number - Ahora más permisivo
-function validatePhone(phone) {
-    // Acepta cualquier formato con al menos 6 caracteres
-    if (!phone || phone.trim() === '') {
-        return true; // Teléfono vacío es válido
-    }
-    return phone.trim().length >= 6;
-}
+// OBSOLETO: Funciones de teléfono ya no se usan
+// function validatePhone(phone) {
+//     // Acepta cualquier formato con al menos 6 caracteres
+//     if (!phone || phone.trim() === '') {
+//         return true; // Teléfono vacío es válido
+//     }
+//     return phone.trim().length >= 6;
+// }
 
-// MODIFICADO: Format phone number - Solo limpia espacios
-function formatPhone(phone) {
-    return phone ? phone.trim() : '';
-}
+// function formatPhone(phone) {
+//     return phone ? phone.trim() : '';
+// }
 
 // Show field error
 function showFieldError(field, message) {
@@ -116,18 +115,18 @@ function validateDate(dateString) {
     return date <= today;
 }
 
-// MODIFICADO: Phone input formatting - Simplificado
-document.addEventListener('DOMContentLoaded', () => {
-    const phoneInputs = document.querySelectorAll('input[type="tel"]');
-    
-    phoneInputs.forEach(input => {
-        input.addEventListener('blur', (e) => {
-            if (e.target.value) {
-                e.target.value = e.target.value.trim();
-            }
-        });
-    });
-});
+// OBSOLETO: Ya no hay campos de teléfono en el sistema
+// document.addEventListener('DOMContentLoaded', () => {
+//     const phoneInputs = document.querySelectorAll('input[type="tel"]');
+//     
+//     phoneInputs.forEach(input => {
+//         input.addEventListener('blur', (e) => {
+//             if (e.target.value) {
+//                 e.target.value = e.target.value.trim();
+//             }
+//         });
+//     });
+// });
 
 // MODIFICADO: Form validation on submit - Menos restrictivo
 function addFormValidation(formId) {
@@ -172,8 +171,8 @@ document.addEventListener('DOMContentLoaded', () => {
 window.validations = {
     validateRut,
     formatRut,
-    validatePhone,
-    formatPhone,
+    // validatePhone, // No existe esta función
+    // formatPhone, // No existe esta función
     validateAge,
     validateDate,
     validateRequiredFields,

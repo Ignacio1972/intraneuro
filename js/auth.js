@@ -85,13 +85,18 @@ function preventLoginModalClose() {
     });
 }
 
-// Handle login - MEJORADO
+// Handle login - MEJORADO - SOLO CLAVE
 async function handleLogin(e) {
     e.preventDefault();
     
-    const username = document.getElementById('username').value;
+    // Siempre usar 'sistema' como usuario
+    const username = 'sistema';
     const password = document.getElementById('password').value;
     const form = e.target;
+    
+    // Preservar parámetros de URL (como ?paciente=123)
+    const urlParams = new URLSearchParams(window.location.search);
+    const patientId = urlParams.get('paciente');
     
     // Add loading state
     form.classList.add('loading');
@@ -113,9 +118,26 @@ async function handleLogin(e) {
             
             showLoginMessage('¡Bienvenido!', 'success');
             
+            // Si hay un paciente en la URL, guardarlo temporalmente
+            if (patientId) {
+                sessionStorage.setItem('pendingPatientId', patientId);
+            }
+            
             setTimeout(() => {
                 form.classList.remove('loading');
-                showMainApp();
+                // showMainApp está en main.js que se carga después
+                if (typeof showMainApp === 'function') {
+                    showMainApp();
+                } else {
+                    // Fallback: mostrar app manualmente
+                    const loginSection = document.getElementById('loginSection');
+                    const mainApp = document.getElementById('mainApp');
+                    if (loginSection) loginSection.style.display = 'none';
+                    if (mainApp) mainApp.style.display = 'block';
+                    if (typeof renderPatients === 'function') {
+                        renderPatients();
+                    }
+                }
             }, 1000);
         }
     } catch (error) {
@@ -127,7 +149,7 @@ async function handleLogin(e) {
         if (error.message && error.message.includes('Failed to fetch')) {
             showLoginMessage('Sistema temporalmente no disponible. Por favor intente más tarde.', 'error');
         } else {
-            showLoginMessage('Usuario o contraseña incorrectos', 'error');
+            showLoginMessage('Clave de acceso incorrecta', 'error');
         }
         
         document.getElementById('password').value = '';

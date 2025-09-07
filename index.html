@@ -25,11 +25,11 @@
                 <img src="assets/img/logo.png" alt="INTRANEURO" class="login-logo">
                 <h2>Sistema de Gestión Clínica</h2>
                 <form id="loginForm">
-                    <div class="form-group">
-                        <input type="text" id="username" placeholder="Usuario" required>
+                    <div class="form-group" style="display: none;">
+                        <input type="text" id="username" value="sistema" placeholder="Usuario">
                     </div>
                     <div class="form-group">
-                        <input type="password" id="password" placeholder="Contraseña" required>
+                        <input type="password" id="password" placeholder="Clave de Acceso" required autofocus>
                     </div>
                     <button type="submit" class="btn btn-primary">Ingresar</button>
                 </form>
@@ -47,7 +47,7 @@
                     <span class="clinic-name">INTRANEURO</span>
                 </div>
                 <div class="user-section">
-                    <span id="currentUser">Usuario: </span>
+                    <span id="currentUser">Acceso autorizado</span>
                     <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
                 </div>
             </div>
@@ -216,16 +216,20 @@ title="Imprimir lista de pacientes">
 
 <!-- Core y utilidades primero -->
 <script src="js/api.js?v=21"></script>
-<script src="js/validaciones.js?v=21"></script>
+<script src="js/validaciones.js?v=25"></script>
 <script src="js/data-catalogos.js?v=21"></script>
 <!-- Módulos de UI -->
 <script src="js/pacientes-ui.js?v=21"></script>
 <!-- Módulos principales -->
-<script src="js/auth.js?v=21"></script>
-<script src="js/pacientes.js?v=21"></script>
+<script src="js/auth.js?v=25"></script>
 <script src="js/ingreso.js?v=21"></script>
-<!-- Main al final porque orquesta todo -->
-<script src="js/main.js?v=21"></script>
+<!-- Main DEBE ir antes de pacientes-refactored para declarar variables globales -->
+<script src="js/main.js?v=27"></script>
+<!-- Módulos refactorizados de pacientes - DESPUÉS de main.js -->
+<script src="js/modules/pacientes/pacientes-api.js?v=28"></script>
+<script src="js/modules/pacientes/pacientes-edit.js?v=27"></script>
+<script src="js/modules/pacientes/pacientes-discharge.js?v=26"></script>
+<script src="js/pacientes-refactored.js?v=26"></script>
 
 <!-- Agregar antes del cierre de </body> en index.html -->
 <footer class="app-footer">

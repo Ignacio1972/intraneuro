@@ -26,14 +26,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     const savedUser = sessionStorage.getItem('currentUser');
     const token = localStorage.getItem('token');
     
+    // Verificar si hay un paciente en la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const patientIdInUrl = urlParams.get('paciente');
+    
     if (savedUser && token) {
         // VERIFICACIÓN COMENTADA - Usando sesión local directamente
         currentUser = savedUser;
+        
+        // Si hay un paciente en la URL, guardarlo para abrirlo después
+        if (patientIdInUrl) {
+            sessionStorage.setItem('pendingPatientId', patientIdInUrl);
+        }
+        
         showMainApp();
         loginModal.style.visibility = 'visible';
     } else {
         // No hay sesión, mostrar login
         console.log('No hay sesión activa');
+        
+        // Si hay un paciente en la URL, se preservará durante el login
+        if (patientIdInUrl) {
+            console.log('Paciente pendiente después del login:', patientIdInUrl);
+        }
+        
         loginModal.style.visibility = 'visible';
         loginModal.classList.add('active');  // Agregar para mostrar login
         forceLogin();
@@ -165,6 +181,13 @@ async function showMainApp() {
     try {
         await updateDashboardFromAPI();
         await renderPatients();
+        
+        // Verificar si hay un paciente en la URL para abrir automáticamente
+        if (typeof loadPatientFromUrl === 'function') {
+            await loadPatientFromUrl();
+        } else if (typeof checkURLForPatient === 'function') {
+            checkURLForPatient();
+        }
     } catch (error) {
         console.error('Error cargando datos:', error);
         // Si hay error crítico, verificar si es por autenticación
