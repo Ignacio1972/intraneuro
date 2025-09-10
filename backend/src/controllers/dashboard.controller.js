@@ -1,11 +1,18 @@
 const { Op } = require('sequelize');
 const Admission = require('../models/admission.model');
+const Patient = require('../models/patient.model');
 
 exports.getStats = async (req, res) => {
     try {
-        // Pacientes activos
-        const activePatients = await Admission.count({
-            where: { status: 'active' }
+        // Contar PACIENTES ÚNICOS activos, no admisiones
+        const activePatients = await Patient.count({
+            include: [{
+                model: Admission,
+                as: 'admissions',
+                where: { status: 'active' },
+                required: true
+            }],
+            distinct: true
         });
         
         // Altas programadas

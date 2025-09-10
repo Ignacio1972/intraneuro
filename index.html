@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="css/pacientes.css?v=21">
 <link rel="stylesheet" href="css/modal.css?v=21">
 <link rel="stylesheet" href="css/pacientes-print.css?v=21">
+<link rel="stylesheet" href="css/chat-notes.css?v=4">
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -239,6 +240,10 @@ title="Imprimir lista de pacientes">
 <script src="js/modules/pacientes/pacientes-edit.js?v=27"></script>
 <script src="js/modules/pacientes/pacientes-discharge.js?v=36"></script>
 <script src="js/pacientes-refactored.js?v=32"></script>
+<!-- Sistema de notas tipo chat - ANTES de pacientes.js -->
+<script src="js/chat-notes.js?v=3"></script>
+<!-- Archivo principal de pacientes - carga al final para sobrescribir funciones conflictivas -->
+<script src="js/pacientes.js?v=39"></script>
 
 <!-- Agregar antes del cierre de </body> en index.html -->
 <footer class="app-footer">

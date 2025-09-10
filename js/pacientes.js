@@ -71,6 +71,9 @@ function openPatientModal(patientId) {
    const admissionData = document.getElementById('admissionData');
    admissionData.innerHTML = renderAdmissionData(patient);
    
+   // Agregar botón de compartir en el header del modal
+   addShareButton(patientId, patient.name);
+   
    // Fill discharge data
    const dischargeData = document.getElementById('dischargeData');
    if (patient.dischargeDate) {
@@ -90,8 +93,40 @@ function openPatientModal(patientId) {
    // Agregar entrada al historial para interceptar botón back en mobile
    history.pushState({patientModal: true, patientId: patientId}, '', '#patient-' + patientId);
    
+   // Inicializar sistema de notas tipo chat
+   if (typeof initializeChatNotes === 'function') {
+       setTimeout(async () => {
+           // Primero recargar datos del paciente para obtener la info más reciente
+           try {
+               const freshPatients = await loadPatients();
+               if (freshPatients && freshPatients.length > 0) {
+                   // Actualizar el array global de pacientes
+                   patients = freshPatients;
+               }
+           } catch (e) {
+               console.log('Usando datos en caché');
+           }
+           initializeChatNotes(patientId);
+       }, 100);
+   }
+   
    // Inicializar tracking de cambios
    initializeChangeTracking();
+   
+   // Si es un paciente activo, establecer fecha de hoy en el campo de egreso
+   if (!patient.dischargeDate) {
+       setTimeout(() => {
+           const dischargeDateField = document.getElementById('dischargeDate');
+           if (dischargeDateField) {
+               // Establecer fecha de hoy por defecto
+               const today = new Date();
+               const year = today.getFullYear();
+               const month = String(today.getMonth() + 1).padStart(2, '0');
+               const day = String(today.getDate()).padStart(2, '0');
+               dischargeDateField.value = `${year}-${month}-${day}`;
+           }
+       }, 100);
+   }
 }
 
 // Render discharge form - COMPLETAMENTE MODIFICADO
@@ -113,6 +148,15 @@ function renderDischargeForm(patientId, patient) {
        <form id="dischargeForm" class="discharge-form" onsubmit="processDischarge(event, ${patientId})">
            <!-- ESCALA RANKIN TEMPORALMENTE DESHABILITADA - 08/08/2025 -->
            <input type="hidden" id="patientRanking" value="0">
+           
+           <div class="form-group">
+               <label>Fecha de Egreso:</label>
+               <div class="date-input-group" style="display: flex; gap: 0.5rem; align-items: center;">
+                   <input type="date" id="dischargeDate" required style="flex: 1;">
+                   <button type="button" class="btn btn-secondary" onclick="setToday('dischargeDate')" style="padding: 0.5rem 1rem;">HOY</button>
+               </div>
+               <small style="color: #666; font-size: 0.85rem;">Fecha de ingreso: ${formatDate(patient.admissionDate)}</small>
+           </div>
            
            <div class="form-group">
                <label>
@@ -216,21 +260,39 @@ async function toggleScheduledDischarge(patientId) {
     }
 }
 
-// MODIFICADA: Process discharge simplificado
+// MODIFICADA: Process discharge con fecha seleccionable
 async function processDischarge(event, patientId) {
    event.preventDefault();
    
    const authorizedBy = document.getElementById('authorizedBy').value.trim();
+   const selectedDate = document.getElementById('dischargeDate').value;
    
-   // Validación simple - solo nombre requerido
+   // Validaciones
    if (!authorizedBy) {
        showToast(catalogos.messages.errorAuth, 'error');
        return;
    }
    
-   // Get form data - SIN fecha manual, SIN pendientes, SIN contraseña
+   if (!selectedDate) {
+       showToast('Por favor seleccione la fecha de egreso', 'error');
+       return;
+   }
+   
+   // Obtener el paciente para validar fecha de ingreso
+   const patient = patients.find(p => p.id === patientId);
+   if (patient) {
+       const admissionDate = new Date(patient.admissionDate);
+       const dischargeDate = new Date(selectedDate);
+       
+       if (dischargeDate < admissionDate) {
+           showToast('La fecha de egreso no puede ser anterior a la fecha de ingreso', 'error');
+           return;
+       }
+   }
+   
+   // Get form data con fecha seleccionada
    const dischargeData = {
-       dischargeDate: new Date().toISOString(), // Fecha automática del servidor
+       dischargeDate: new Date(selectedDate).toISOString(), // Usar fecha seleccionada
        scheduledDischarge: false, // El egreso cancela la alta programada
        ranking: parseInt(document.getElementById('patientRanking').value),
        dischargeDiagnosis: document.getElementById('dischargeDiagnosis').value,
@@ -982,6 +1044,40 @@ async function editAdmittedBy(event, patientId) {
    }
 }
 
+// Editar descripción del diagnóstico
+async function editDiagnosisDetails(event, patientId) {
+   event.stopPropagation();
+   
+   const patient = patients.find(p => p.id === patientId);
+   if (!patient) return;
+   
+   const currentDetails = patient.diagnosisDetails || '';
+   const newDetails = prompt(
+       `Editar descripción del diagnóstico:\n\n` +
+       `Descripción actual: ${currentDetails || 'Sin descripción'}\n\n` +
+       `Ingrese la nueva descripción:`,
+       currentDetails
+   );
+   
+   if (newDetails !== null) {
+       try {
+           const response = await apiRequest(`/patients/${patientId}/diagnosis-details`, {
+               method: 'PUT',
+               body: JSON.stringify({ diagnosisDetails: newDetails || '' })
+           });
+           
+           if (response.success) {
+               patient.diagnosisDetails = newDetails || '';
+               document.getElementById(`diagnosis-details-${patientId}`).textContent = newDetails || 'Sin descripción';
+               showToast('Descripción actualizada correctamente');
+           }
+       } catch (error) {
+           console.error('Error actualizando descripción:', error);
+           showToast('Error al actualizar descripción', 'error');
+       }
+   }
+}
+
 // Editar nombre del paciente
 async function editPatientName(event, patientId) {
    event.stopPropagation(); // Evitar cerrar o interferir con el modal
@@ -1037,6 +1133,10 @@ async function editPatientName(event, patientId) {
            const admissionData = document.getElementById('admissionData');
            if (admissionData) {
                admissionData.innerHTML = renderAdmissionData(patient);
+               // IMPORTANTE: Re-agregar el botón compartir después del re-renderizado
+               setTimeout(() => {
+                   addShareButton(patient.id, patient.name);
+               }, 50);
            }
            
            // Re-renderizar la lista de pacientes
@@ -1076,3 +1176,355 @@ window.addEventListener('popstate', function(e) {
         }
     }
 });
+
+// ============= FUNCIONES DE COMPARTIR FICHA =============
+
+// Compartir paciente directamente desde la lista (sin abrir modal)
+function sharePatientFromList(event, patientId, patientName) {
+    // Detener propagación para no abrir el modal del paciente
+    event.stopPropagation();
+    
+    // Usar la función de compartir existente
+    sharePatientRecord(patientId, patientName);
+}
+
+// Agregar botón de compartir al modal
+function addShareButton(patientId, patientName) {
+    // Limpiar TODOS los botones compartir existentes (por si hay múltiples)
+    const existingButtons = document.querySelectorAll('.share-patient-btn');
+    existingButtons.forEach(btn => btn.remove());
+    
+    // Crear botón de compartir
+    const shareButton = document.createElement('button');
+    shareButton.className = 'share-patient-btn';
+    shareButton.title = 'Compartir ficha';
+    
+    // Icono SVG de avión de papel
+    const shareIcon = `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 2L11 13"></path>
+            <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+        </svg>
+    `;
+    
+    shareButton.innerHTML = shareIcon;
+    
+    // Buscar el título "DATOS DE INGRESO" y modificar su contenedor
+    const admissionSection = document.querySelector('.admission-section');
+    if (admissionSection) {
+        const h2 = admissionSection.querySelector('h2');
+        if (h2 && h2.textContent === 'DATOS DE INGRESO') {
+            // Verificar si ya tiene wrapper
+            let titleWrapper = h2.parentElement;
+            if (!titleWrapper.classList.contains('section-title-wrapper')) {
+                // Crear wrapper para el título
+                titleWrapper = document.createElement('div');
+                titleWrapper.className = 'section-title-wrapper';
+                titleWrapper.style.cssText = `
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-start;
+                    margin-bottom: 1.5rem;
+                    padding-bottom: 1rem;
+                    border-bottom: 2px solid var(--border-color);
+                    position: relative;
+                    gap: 0.5rem;
+                `;
+                
+                // Mover h2 dentro del wrapper
+                h2.parentNode.insertBefore(titleWrapper, h2);
+                titleWrapper.appendChild(h2);
+                
+                // Ajustar estilos del h2 para que no duplique el borde
+                h2.style.margin = '0';
+                h2.style.paddingBottom = '0';
+                h2.style.borderBottom = 'none';
+                h2.style.marginBottom = '0';
+            }
+            
+            // Estilos minimalistas del botón - solo ícono
+            shareButton.style.cssText = `
+                background: transparent;
+                color: #666;
+                border: none;
+                cursor: pointer;
+                padding: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+                flex-shrink: 0;
+                order: -1;
+            `;
+            
+            // Hover effect sutil
+            shareButton.onmouseover = () => {
+                shareButton.style.color = '#4CAF50';
+                shareButton.style.transform = 'scale(1.1)';
+            };
+            
+            shareButton.onmouseout = () => {
+                shareButton.style.color = '#666';
+                shareButton.style.transform = 'scale(1)';
+            };
+            
+            // Click handler
+            shareButton.onclick = (e) => {
+                e.stopPropagation();
+                sharePatientRecord(patientId, patientName);
+            };
+            
+            // Agregar botón al wrapper del título (se posicionará a la izquierda por order: -1)
+            titleWrapper.appendChild(shareButton);
+        }
+    }
+}
+
+// Función para compartir ficha del paciente
+async function sharePatientRecord(patientId, patientName) {
+    const baseUrl = window.location.origin;
+    // Usar la nueva página ficha.html que no requiere login
+    const shareUrl = `${baseUrl}/ficha.html?id=${patientId}`;
+    
+    // Opciones de compartir
+    const shareOptions = `
+        <div style="padding: 20px;">
+            <h3 style="margin-bottom: 20px;">Compartir ficha de ${patientName}</h3>
+            
+            <div style="margin-bottom: 15px;">
+                <input type="text" value="${shareUrl}" id="shareUrlInput" readonly 
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background: #f5f5f5;">
+            </div>
+            
+            <div style="display: grid; gap: 10px;">
+                <button onclick="copyShareLink('${shareUrl}')" class="btn btn-primary" style="width: 100%;">
+                    📋 Copiar enlace
+                </button>
+                
+                <button onclick="shareViaWhatsApp('${shareUrl}', '${patientName}')" class="btn btn-success" style="width: 100%; background: #25D366;">
+                    📱 Compartir por WhatsApp
+                </button>
+                
+                <button onclick="shareViaEmail('${shareUrl}', '${patientName}')" class="btn btn-info" style="width: 100%; background: #0078D4;">
+                    ✉️ Enviar por correo
+                </button>
+                
+                <button onclick="closeShareDialog()" class="btn btn-secondary" style="width: 100%;">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Crear modal de compartir
+    const shareModal = document.createElement('div');
+    shareModal.id = 'shareModal';
+    shareModal.className = 'modal active';
+    shareModal.innerHTML = `
+        <div class="modal-content" style="max-width: 400px; margin: 10% auto;">
+            ${shareOptions}
+        </div>
+    `;
+    
+    document.body.appendChild(shareModal);
+}
+
+// Copiar enlace al portapapeles
+function copyShareLink(url) {
+    const input = document.getElementById('shareUrlInput');
+    if (input) {
+        input.select();
+        document.execCommand('copy');
+        
+        // Feedback visual
+        showToast('¡Enlace copiado al portapapeles!', 'success');
+        
+        // Cambiar texto del botón temporalmente
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '✅ ¡Copiado!';
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+        }, 2000);
+    }
+}
+
+// Compartir por WhatsApp
+function shareViaWhatsApp(url, patientName) {
+    const message = `Ficha médica de ${patientName}:\n${url}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    closeShareDialog();
+}
+
+// Compartir por email
+function shareViaEmail(url, patientName) {
+    const subject = `Ficha médica de ${patientName}`;
+    const body = `Hola,\n\nComparto la ficha médica de ${patientName}:\n\n${url}\n\nSaludos`;
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
+    closeShareDialog();
+}
+
+// Cerrar dialog de compartir
+function closeShareDialog() {
+    const shareModal = document.getElementById('shareModal');
+    if (shareModal) {
+        shareModal.remove();
+    }
+}
+
+// Cargar paciente desde URL si hay parámetro
+async function loadPatientFromUrl() {
+    // Primero verificar si hay un paciente pendiente del login
+    let patientId = sessionStorage.getItem('pendingPatientId');
+    
+    // Si no hay pendiente, verificar la URL actual
+    if (!patientId) {
+        const urlParams = new URLSearchParams(window.location.search);
+        patientId = urlParams.get('paciente');
+    }
+    
+    if (patientId) {
+        // Limpiar el pendiente si existe
+        sessionStorage.removeItem('pendingPatientId');
+        
+        // Esperar a que se carguen los pacientes
+        setTimeout(async () => {
+            await loadPatientsFromAPI();
+            
+            const patient = patients.find(p => p.id == patientId);
+            if (patient) {
+                // Abrir modal del paciente automáticamente
+                openPatientModal(parseInt(patientId));
+                
+                // Limpiar URL para evitar que se abra siempre
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                // Mostrar mensaje de éxito
+                showToast(`Mostrando ficha de ${patient.name}`, 'success');
+            } else {
+                showToast('Paciente no encontrado', 'error');
+            }
+        }, 1500);
+    }
+}
+
+// Variables para controlar el ordenamiento
+let currentSortColumn = null;
+let sortDirection = 'asc'; // 'asc' o 'desc'
+
+// Función para ordenar por columna
+function sortByColumn(column) {
+    // Si es la misma columna, cambiar dirección
+    if (currentSortColumn === column) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentSortColumn = column;
+        sortDirection = 'asc';
+    }
+    
+    // Obtener pacientes activos
+    const activePatients = patients.filter(p => p.status === 'active');
+    
+    // Ordenar según la columna
+    activePatients.sort((a, b) => {
+        let valueA, valueB;
+        
+        switch(column) {
+            case 'name':
+                valueA = a.name.toLowerCase();
+                valueB = b.name.toLowerCase();
+                break;
+            case 'age':
+                valueA = parseInt(a.age) || 0;
+                valueB = parseInt(b.age) || 0;
+                break;
+            case 'doctor':
+                valueA = (a.admittedBy || '').toLowerCase();
+                valueB = (b.admittedBy || '').toLowerCase();
+                break;
+            case 'bed':
+                // Ordenar camas numéricamente si es posible
+                valueA = parseInt(a.bed) || a.bed || '';
+                valueB = parseInt(b.bed) || b.bed || '';
+                break;
+            case 'days':
+                valueA = a.daysInHospital || 0;
+                valueB = b.daysInHospital || 0;
+                break;
+            case 'admission':
+                valueA = new Date(a.admissionDate);
+                valueB = new Date(b.admissionDate);
+                break;
+            default:
+                return 0;
+        }
+        
+        // Comparar valores
+        if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
+        if (valueA > valueB) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+    });
+    
+    // Actualizar array global con el orden
+    patients = [...activePatients, ...patients.filter(p => p.status !== 'active')];
+    
+    // Obtener el contenedor
+    const container = document.getElementById('patientsContainer');
+    
+    // Guardar posición del scroll - tanto del contenedor como de la tabla
+    let scrollLeft = 0;
+    let scrollTop = container.scrollTop;
+    
+    // En vista lista, buscar si hay tabla con scroll
+    if (viewMode === 'list') {
+        const currentTable = container.querySelector('.patients-table');
+        if (currentTable) {
+            scrollLeft = currentTable.scrollLeft;
+        }
+    } else {
+        scrollLeft = container.scrollLeft;
+    }
+    
+    // Re-renderizar la lista
+    if (viewMode === 'list') {
+        container.innerHTML = renderPatientTable(activePatients);
+    } else {
+        container.innerHTML = activePatients.map(patient => renderPatientCard(patient)).join('');
+    }
+    
+    // Restaurar la posición del scroll
+    if (viewMode === 'list') {
+        const newTable = container.querySelector('.patients-table');
+        if (newTable) {
+            newTable.scrollLeft = scrollLeft;
+        }
+    } else {
+        container.scrollLeft = scrollLeft;
+    }
+    container.scrollTop = scrollTop;
+    
+    // Re-agregar click handlers
+    addPatientClickHandlers();
+    
+    // Actualizar indicadores visuales
+    updateSortIndicators(column);
+}
+
+// Función para actualizar indicadores de ordenamiento
+function updateSortIndicators(column) {
+    // Limpiar todos los indicadores
+    ['name', 'age', 'doctor', 'bed', 'days', 'admission'].forEach(col => {
+        const indicator = document.getElementById(`sort-${col}`);
+        if (indicator) {
+            indicator.textContent = '';
+        }
+    });
+    
+    // Agregar indicador a la columna actual
+    const currentIndicator = document.getElementById(`sort-${column}`);
+    if (currentIndicator) {
+        currentIndicator.textContent = sortDirection === 'asc' ? '▲' : '▼';
+    }
+}

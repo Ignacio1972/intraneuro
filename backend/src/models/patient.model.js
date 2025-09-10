@@ -23,10 +23,6 @@ const Patient = sequelize.define('Patient', {
         type: DataTypes.STRING(15),
         unique: true,
         allowNull: true
-    },
-    phone: {
-        type: DataTypes.STRING(20),
-        allowNull: true
     }
 }, {
     tableName: 'patients',

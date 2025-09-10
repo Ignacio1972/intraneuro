@@ -2,7 +2,10 @@ const router = require('express').Router();
 const patientsController = require('../controllers/patients.controller');
 const authMiddleware = require('../middleware/auth.middleware');
 
-// Aplicar autenticación a TODAS las rutas
+// Ruta pública para compartir fichas (SIN autenticación)
+router.get('/public/:id', patientsController.getPublicPatient);
+
+// Aplicar autenticación a TODAS las demás rutas
 router.use(authMiddleware);
 
 // Pacientes - SIN el prefijo /patients porque ya está en index.js
@@ -26,6 +29,7 @@ router.put('/:id/admission', patientsController.updateActiveAdmission);
 router.put('/:id/discharge', patientsController.updateDischarge);
 router.put('/:id/bed', patientsController.updateBed);
 router.put('/:id/admittedBy', patientsController.updateAdmittedBy);
+router.put('/:id/diagnosis-details', patientsController.updateDiagnosisDetails);
 router.put('/:id', patientsController.updatePatient);
 router.delete('/:id', patientsController.deletePatient);
 router.get('/:id', patientsController.getPatientById); // Esta DEBE ir al final

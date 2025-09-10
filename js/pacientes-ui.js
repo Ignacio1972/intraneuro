@@ -28,16 +28,18 @@ function renderPatientCard(patient) {
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; padding: 0.5rem 0; border-top: 1px solid rgba(0,0,0,0.05);">
                 <span class="patient-meta" style="font-size: 0.85rem; color: var(--text-secondary);">
                     <span class="icon">🛏️</span> Cama: 
-                    <span class="bed-display" onclick="editBed(event, ${patient.id})" 
-                          style="cursor: pointer; text-decoration: underline; color: var(--primary-color);">
+                    <span class="bed-display">
                         ${patient.bed || 'Sin asignar'}
                     </span>
                 </span>
                 <button onclick="sharePatientFromList(event, ${patient.id}, '${patient.name.replace(/'/g, "\\'")}')" 
                         class="share-btn-inline" 
                         title="Compartir ficha"
-                        style="background: none; border: none; cursor: pointer; padding: 5px; opacity: 0.6;">
-                    <span style="font-size: 18px;">📤</span>
+                        style="background: none; border: none; cursor: pointer; padding: 5px; opacity: 0.7; transition: all 0.2s ease;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 2L11 13"></path>
+                        <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+                    </svg>
                 </button>
             </div>
         </div>
@@ -51,13 +53,25 @@ function renderPatientTable(activePatients) {
             <thead>
                 <tr>
                     <th></th>
-                    <th>Nombre</th>
-                    <th>Edad</th>
+                    <th onclick="sortByColumn('name')" style="cursor: pointer; user-select: none;">
+                        Nombre <span id="sort-name" style="font-size: 12px;"></span>
+                    </th>
+                    <th onclick="sortByColumn('age')" style="cursor: pointer; user-select: none;">
+                        Edad <span id="sort-age" style="font-size: 12px;"></span>
+                    </th>
                     <th>Diagnóstico</th>
-                    <th>Médico Tratante</th>
-                    <th>Cama</th>
-                    <th>Días</th>
-                    <th>Ingresado</th>
+                    <th onclick="sortByColumn('doctor')" style="cursor: pointer; user-select: none; position: relative;">
+                        Médico Tratante <span id="sort-doctor" style="font-size: 12px;"></span>
+                    </th>
+                    <th onclick="sortByColumn('bed')" style="cursor: pointer; user-select: none;">
+                        Cama <span id="sort-bed" style="font-size: 12px;"></span>
+                    </th>
+                    <th onclick="sortByColumn('days')" style="cursor: pointer; user-select: none;">
+                        Días <span id="sort-days" style="font-size: 12px;"></span>
+                    </th>
+                    <th onclick="sortByColumn('admission')" style="cursor: pointer; user-select: none;">
+                        Ingresado <span id="sort-admission" style="font-size: 12px;"></span>
+                    </th>
                     <th></th>
                 </tr>
             </thead>
@@ -73,14 +87,12 @@ function renderPatientTable(activePatients) {
                         <td>${patient.age} años</td>
                         <td>${catalogos.getDiagnosisText(patient.diagnosis)}</td>
                         <td>
-                            <span class="doctor-display" onclick="editAdmittedBy(event, ${patient.id})" 
-                                  style="cursor: pointer; text-decoration: underline; color: var(--primary-color);">
+                            <span class="doctor-display">
                                 ${patient.admittedBy || 'Sin asignar'}
                             </span>
                         </td>
                         <td>
-                            <span class="bed-display" onclick="editBed(event, ${patient.id})" 
-                                  style="cursor: pointer; text-decoration: underline; color: var(--primary-color);">
+                            <span class="bed-display">
                                 ${patient.bed || 'Sin asignar'}
                             </span>
                         </td>
@@ -90,8 +102,13 @@ function renderPatientTable(activePatients) {
                             <button onclick="sharePatientFromList(event, ${patient.id}, '${patient.name.replace(/'/g, "\\'")}')" 
                                     class="share-btn-inline" 
                                     title="Compartir ficha"
-                                    style="background: none; border: none; cursor: pointer; padding: 5px; opacity: 0.6; transition: opacity 0.2s;">
-                                <span style="font-size: 18px;">📤</span>
+                                    style="background: none; border: none; cursor: pointer; padding: 5px; opacity: 0.7; transition: all 0.2s ease;"
+                                    onmouseover="this.style.opacity='1'; this.style.color='#4CAF50';"
+                                    onmouseout="this.style.opacity='0.7'; this.style.color='inherit';">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 2L11 13"></path>
+                                    <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+                                </svg>
                             </button>
                         </td>
                     </tr>
@@ -196,38 +213,57 @@ function renderAdmissionData(patient) {
             <span class="info-value" id="admitted-by-${patient.id}">${patient.admittedBy}</span>
         </div>
         
-        <!-- NUEVA SECCIÓN: Historia y Pendientes -->
+        <!-- NUEVA SECCIÓN: Sistema de Notas tipo Chat -->
         <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--border-color);">
-            <div class="form-group" style="margin-bottom: 1rem;">
-                <label style="font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">
-                    Historia:
-                </label>
-                <textarea 
-                    id="patientObservations" 
-                    style="width: 100%; max-width: 100%; min-height: 120px; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 4px; resize: vertical; box-sizing: border-box;"
-                    placeholder="Historia clínica del paciente..."
-                >${patient.observations || ''}</textarea>
-                <div id="observationHistory" style="margin-top: 0.5rem; font-size: 0.85em; color: var(--text-secondary);"></div>
+            <h3 style="font-weight: 600; color: var(--text-secondary); margin-bottom: 1rem;">
+                📝 Seguimiento del Paciente
+            </h3>
+            
+            <div class="chat-notes-container">
+                <!-- Tabs para Historia y Pendientes -->
+                <div class="chat-tabs">
+                    <button class="chat-tab active" onclick="switchChatTab(${patient.id}, 'historia')">
+                        Historia Clínica
+                    </button>
+                    <button class="chat-tab" onclick="switchChatTab(${patient.id}, 'pendientes')">
+                        Tareas Pendientes
+                    </button>
+                </div>
+                
+                <!-- Área de mensajes -->
+                <div class="chat-messages" id="chat-messages-${patient.id}">
+                    <!-- Los mensajes se cargarán aquí dinámicamente -->
+                </div>
+                
+                <!-- Input y botón de envío -->
+                <div class="chat-input-container">
+                    <div class="chat-input-wrapper">
+                        <textarea 
+                            class="chat-input" 
+                            id="chat-input-${patient.id}"
+                            placeholder="Escribe una nota..."
+                            rows="1"
+                            onkeydown="handleChatKeydown(event, ${patient.id})"
+                            oninput="autoResizeChatInput(this)"
+                        ></textarea>
+                    </div>
+                    <button 
+                        class="chat-send-btn" 
+                        id="chat-send-btn-${patient.id}"
+                        onclick="sendChatNote(${patient.id})"
+                        title="Enviar nota"
+                    >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
             </div>
             
-            <div class="form-group" style="margin-bottom: 1rem;">
-                <label style="font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">
-                    Pendientes:
-                </label>
-                <textarea 
-                    id="patientPendingTasks" 
-                    style="width: 100%; max-width: 100%; min-height: 120px; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 4px; resize: vertical; box-sizing: border-box;"
-                    placeholder="Tareas o procedimientos pendientes..."
-                >${patient.pendingTasks || ''}</textarea>
-                <div id="taskHistory" style="margin-top: 0.5rem; font-size: 0.85em; color: var(--text-secondary);"></div>
-            </div>
-            
-            <button 
-                class="btn btn-primary" 
-                onclick="saveObservationsAndTasks(${patient.id})"
-                style="width: 60%;">
-                Guardar
-            </button>
+            <!-- Campos ocultos para mantener compatibilidad -->
+            <input type="hidden" id="patientObservations" value="${patient.observations || ''}">
+            <input type="hidden" id="patientPendingTasks" value="${patient.pendingTasks || ''}">
         </div>
     `;
 }

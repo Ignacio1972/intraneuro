@@ -31,18 +31,13 @@ const Admission = sequelize.define('Admission', {
         type: DataTypes.TEXT,
         allowNull: true
     },
-    allergies: {
-        type: DataTypes.TEXT,
-        allowNull: true
-    },
     admitted_by: {
         type: DataTypes.STRING(100),
         allowNull: false
     },
     bed: {
         type: DataTypes.STRING(20),
-        allowNull: true,
-        defaultValue: 'Sin asignar'
+        allowNull: true
     },
     discharge_date: {
         type: DataTypes.DATEONLY,

@@ -127,13 +127,21 @@ function renderArchivedPatients(patientsToRender = archivedPatients) {
         <table class="archived-table">
             <thead>
                 <tr>
-                    <th>Nombre</th>
+                    <th onclick="sortArchivedByColumn('name')" style="cursor: pointer; user-select: none;">
+                        Nombre <span id="sort-name" style="font-size: 12px;"></span>
+                    </th>
                     <th>RUT</th>
                     <th>Edad</th>
-                    <th>Fecha Ingreso</th>
-                    <th>Fecha Alta</th>
+                    <th onclick="sortArchivedByColumn('admission')" style="cursor: pointer; user-select: none;">
+                        Fecha Ingreso <span id="sort-admission" style="font-size: 12px;"></span>
+                    </th>
+                    <th onclick="sortArchivedByColumn('discharge')" style="cursor: pointer; user-select: none;">
+                        Fecha Alta <span id="sort-discharge" style="font-size: 12px;"></span>
+                    </th>
                     <th>Diagnóstico</th>
-                    <th>Días</th>
+                    <th onclick="sortArchivedByColumn('days')" style="cursor: pointer; user-select: none;">
+                        Días <span id="sort-days" style="font-size: 12px;"></span>
+                    </th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -243,7 +251,6 @@ function showArchivedPatientModal(patientData) {
     if (elements.modalName) elements.modalName.textContent = patientData.name;
     if (elements.modalRut) elements.modalRut.textContent = patientData.rut || 'Sin RUT';
     if (elements.modalAge) elements.modalAge.textContent = patientData.age + ' años';
-    if (elements.modalPhone) elements.modalPhone.textContent = patientData.phone || 'Sin teléfono';
     
     // Mostrar historial de admisiones
     if (patientData.admissions) {
@@ -472,7 +479,7 @@ function exportToExcel() {
             ['LISTADO DE PACIENTES ARCHIVADOS - INTRANEURO'],
             ['Fecha de generación:', new Date().toLocaleString('es-CL')],
             [''], // Línea vacía
-            ['Nombre', 'RUT', 'Edad', 'Teléfono', 'Fecha Ingreso', 'Fecha Egreso', 'Días Hospitalizado', 'Diagnóstico Ingreso', 'Diagnóstico Egreso', 'Ranking', 'Médico de Alta']
+            ['Nombre', 'RUT', 'Edad', 'Fecha Ingreso', 'Fecha Egreso', 'Días Hospitalizado', 'Diagnóstico Ingreso', 'Diagnóstico Egreso', 'Ranking', 'Médico de Alta']
         ];
         
         // Agregar datos de cada paciente
@@ -490,7 +497,6 @@ function exportToExcel() {
                 patient.name || '-',
                 patient.rut || 'Sin RUT',
                 patient.age || '-',
-                patient.phone || 'Sin teléfono',
                 formatDate(lastAdmission.admissionDate) || '-',
                 formatDate(lastAdmission.dischargeDate) || '-',
                 days,
@@ -587,4 +593,94 @@ function calculateDaysBetween(startDate, endDate) {
     const diffTime = Math.abs(end - start);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
+}
+
+// Variables para controlar el ordenamiento
+let currentArchiveSortColumn = null;
+let archiveSortDirection = 'asc';
+
+// Función para ordenar columnas en archivos
+function sortArchivedByColumn(column) {
+    // Si es la misma columna, cambiar dirección
+    if (currentArchiveSortColumn === column) {
+        archiveSortDirection = archiveSortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentArchiveSortColumn = column;
+        archiveSortDirection = 'asc';
+    }
+    
+    // Obtener el contenedor y guardar posición del scroll
+    const container = document.getElementById('archivosContainer');
+    const currentTable = container.querySelector('.archived-table');
+    let scrollLeft = 0;
+    let scrollTop = container.scrollTop;
+    
+    if (currentTable) {
+        scrollLeft = currentTable.scrollLeft;
+    }
+    
+    // Ordenar los pacientes archivados
+    const sortedPatients = [...archivedPatients].sort((a, b) => {
+        let valueA, valueB;
+        
+        // Usar la última admisión de cada paciente
+        const admissionA = a.admissions[0];
+        const admissionB = b.admissions[0];
+        
+        switch(column) {
+            case 'name':
+                valueA = a.name.toLowerCase();
+                valueB = b.name.toLowerCase();
+                break;
+            case 'admission':
+                valueA = new Date(admissionA.admissionDate);
+                valueB = new Date(admissionB.admissionDate);
+                break;
+            case 'discharge':
+                valueA = new Date(admissionA.dischargeDate);
+                valueB = new Date(admissionB.dischargeDate);
+                break;
+            case 'days':
+                valueA = calculateDaysBetween(admissionA.admissionDate, admissionA.dischargeDate);
+                valueB = calculateDaysBetween(admissionB.admissionDate, admissionB.dischargeDate);
+                break;
+            default:
+                return 0;
+        }
+        
+        // Comparar valores
+        if (valueA < valueB) return archiveSortDirection === 'asc' ? -1 : 1;
+        if (valueA > valueB) return archiveSortDirection === 'asc' ? 1 : -1;
+        return 0;
+    });
+    
+    // Re-renderizar con los datos ordenados
+    renderArchivedPatients(sortedPatients);
+    
+    // Restaurar la posición del scroll
+    const newTable = container.querySelector('.archived-table');
+    if (newTable) {
+        newTable.scrollLeft = scrollLeft;
+    }
+    container.scrollTop = scrollTop;
+    
+    // Actualizar indicadores visuales
+    updateArchiveSortIndicators(column);
+}
+
+// Función para actualizar indicadores de ordenamiento
+function updateArchiveSortIndicators(column) {
+    // Limpiar todos los indicadores
+    ['name', 'admission', 'discharge', 'days'].forEach(col => {
+        const indicator = document.getElementById(`sort-${col}`);
+        if (indicator) {
+            indicator.textContent = '';
+        }
+    });
+    
+    // Agregar indicador a la columna actual
+    const currentIndicator = document.getElementById(`sort-${column}`);
+    if (currentIndicator) {
+        currentIndicator.textContent = archiveSortDirection === 'asc' ? '▲' : '▼';
+    }
 }

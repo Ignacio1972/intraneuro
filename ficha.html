@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha Médica - INTRANEURO</title>
+    <link rel="stylesheet" href="css/main.css?v=21">
+    <link rel="stylesheet" href="css/pacientes.css?v=21">
+    <link rel="stylesheet" href="css/modal.css?v=21">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #f5f7fa;
+            padding: 20px;
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .ficha-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        .ficha-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .header-logo {
+            height: 50px;
+        }
+        .clinic-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .ficha-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        .ficha-section {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .ficha-section h2 {
+            color: #1e293b;
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #64748b;
+            min-width: 140px;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            color: #1e293b;
+            flex: 1;
+            word-break: break-word;
+        }
+        .notes-section {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 5px;
+            font-size: 14px;
+            line-height: 1.6;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .note-entry {
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .note-entry:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .note-header {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+        .note-text {
+            color: #1e293b;
+            font-size: 14px;
+        }
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+        .error {
+            text-align: center;
+            padding: 60px 20px;
+            color: #ef4444;
+        }
+        .print-btn {
+            padding: 15px 30px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+        .print-btn:hover {
+            background: #2563eb;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .print-btn:active {
+            transform: translateY(1px);
+        }
+        
+        /* Mejoras para móviles */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                background: white;
+            }
+            .ficha-container {
+                padding: 20px;
+                border-radius: 0;
+                box-shadow: none;
+            }
+            .ficha-header {
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+            }
+            .header-logo {
+                height: 40px;
+            }
+            .clinic-name {
+                font-size: 20px;
+            }
+            .ficha-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .ficha-section {
+                padding: 15px;
+            }
+            .ficha-section h2 {
+                font-size: 16px;
+                margin-bottom: 15px;
+            }
+            .info-row {
+                flex-direction: column;
+                margin-bottom: 18px;
+            }
+            .info-label {
+                min-width: auto;
+                margin-bottom: 3px;
+                font-size: 14px;
+            }
+            .info-value {
+                font-size: 15px;
+                padding-left: 0;
+            }
+            .print-btn {
+                width: 100%;
+                padding: 18px;
+                font-size: 17px;
+                border-radius: 10px;
+            }
+        }
+        
+        /* Para pantallas muy pequeñas */
+        @media (max-width: 380px) {
+            .ficha-container {
+                padding: 15px;
+            }
+            .clinic-name {
+                font-size: 18px;
+            }
+            .header-logo {
+                height: 35px;
+            }
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+            }
+            .print-btn {
+                display: none;
+            }
+            .ficha-container {
+                box-shadow: none;
+                max-width: 100%;
+            }
+            .ficha-content {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="ficha-container">
+        <div class="ficha-header">
+            <div class="logo-section">
+                <img src="assets/img/logo.png" alt="INTRANEURO" class="header-logo">
+                <span class="clinic-name">INTRANEURO</span>
+            </div>
+        </div>
+        
+        <div id="fichaContent">
+            <div class="loading">Cargando ficha médica...</div>
+        </div>
+        
+        <!-- Botón de imprimir al final para mejor visualización móvil -->
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e5e7eb;">
+            <button class="print-btn" onclick="window.print()">
+                🖨️ Imprimir Ficha
+            </button>
+            <p style="margin-top: 15px; font-size: 13px; color: #94a3b8;">
+                Sistema de Gestión Clínica - INTRANEURO
+            </p>
+        </div>
+    </div>
+
+    <script src="js/api.js?v=21"></script>
+    <script>
+        // Variable global para almacenar todos los pacientes
+        let allPatients = [];
+        
+        // Solución SIMPLE: usar el endpoint público directo
+        async function loadPatientData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const patientId = urlParams.get('id');
+            
+            if (!patientId) {
+                document.getElementById('fichaContent').innerHTML = 
+                    '<div class="error">No se especificó ID de paciente</div>';
+                return;
+            }
+
+            try {
+                // Usar el endpoint público que funciona sin autenticación
+                const response = await fetch(`${API_CONFIG.baseURL}/patients/public/${patientId}`);
+                
+                if (response.ok) {
+                    const patient = await response.json();
+                    displayPatient(patient);
+                } else {
+                    document.getElementById('fichaContent').innerHTML = 
+                        '<div class="error">Paciente no encontrado (ID: ' + patientId + ')</div>';
+                }
+            } catch (error) {
+                console.error('Error cargando paciente:', error);
+                document.getElementById('fichaContent').innerHTML = 
+                    '<div class="error">Error al cargar los datos del paciente</div>';
+            }
+        }
+
+
+        function displayPatient(patient) {
+            const content = `
+                <div class="ficha-content">
+                    <div class="ficha-section">
+                        <h2>📝 DATOS DEL PACIENTE</h2>
+                        <div class="info-row">
+                            <span class="info-label">Nombre:</span>
+                            <span class="info-value">${patient.name}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Edad:</span>
+                            <span class="info-value">${patient.age} años</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">RUT:</span>
+                            <span class="info-value">${patient.rut || 'Sin RUT'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Cama:</span>
+                            <span class="info-value">${patient.bed || 'Sin asignar'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Fecha Ingreso:</span>
+                            <span class="info-value">${formatDate(patient.admissionDate)}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Médico Tratante:</span>
+                            <span class="info-value">${patient.admittedBy}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="ficha-section">
+                        <h2>🏥 INFORMACIÓN CLÍNICA</h2>
+                        <div class="info-row">
+                            <span class="info-label">Diagnóstico:</span>
+                            <span class="info-value">${patient.diagnosisText || patient.diagnosis}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Descripción:</span>
+                            <span class="info-value">${patient.diagnosisDetails || 'Sin descripción'}</span>
+                        </div>
+                        <div class="info-row" style="flex-direction: column;">
+                            <span class="info-label" style="margin-bottom: 8px;">📋 Historia Clínica:</span>
+                            <div class="info-value">${formatChatNotes(patient.observations, 'historia clínica')}</div>
+                        </div>
+                        <div class="info-row" style="flex-direction: column;">
+                            <span class="info-label" style="margin-bottom: 8px;">✅ Tareas Pendientes:</span>
+                            <div class="info-value">${formatChatNotes(patient.pendingTasks, 'tareas pendientes')}</div>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Estado:</span>
+                            <span class="info-value">${patient.status === 'active' ? '✅ Activo' : '📤 Egresado'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('fichaContent').innerHTML = content;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Sin fecha';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-CL', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric' 
+            });
+        }
+        
+        // Función para formatear las notas del chat a HTML legible
+        function formatChatNotes(notesData, tipo) {
+            if (!notesData) return `<span style="color: #94a3b8;">Sin ${tipo}</span>`;
+            
+            // Si es una cadena, intentar parsearla como JSON
+            let notes = notesData;
+            if (typeof notesData === 'string') {
+                try {
+                    notes = JSON.parse(notesData);
+                } catch (e) {
+                    // Si no es JSON, devolver el texto tal cual con formato
+                    if (notesData.trim()) {
+                        return `<div class="notes-section">${notesData}</div>`;
+                    }
+                    return `<span style="color: #94a3b8;">Sin ${tipo}</span>`;
+                }
+            }
+            
+            // Si no es un array o está vacío
+            if (!Array.isArray(notes) || notes.length === 0) {
+                return `<span style="color: #94a3b8;">Sin ${tipo}</span>`;
+            }
+            
+            // Crear HTML con formato bonito
+            let html = '<div class="notes-section">';
+            
+            // Ordenar notas por fecha (más recientes primero)
+            const sortedNotes = [...notes].reverse();
+            
+            sortedNotes.forEach((note, index) => {
+                const fecha = note.timestamp ? note.timestamp.split(',')[0] : '';
+                const hora = note.timestamp ? note.timestamp.split(',')[1]?.trim() : '';
+                const autor = note.author || 'Sistema';
+                const texto = note.text || '';
+                
+                html += `
+                    <div class="note-entry">
+                        <div class="note-header">
+                            📝 ${fecha} ${hora} - <strong>${autor}</strong>
+                        </div>
+                        <div class="note-text">${texto}</div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            return html;
+        }
+
+        // Cargar datos al iniciar
+        loadPatientData();
+    </script>
+</body>
+</html>

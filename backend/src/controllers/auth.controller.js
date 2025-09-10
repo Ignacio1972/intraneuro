@@ -1,31 +1,31 @@
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
 
-// Login
+// Login - MODIFICADO PARA SOLO CLAVE
 exports.login = async (req, res) => {
     try {
         const { username, password } = req.body;
         
-        // Validar entrada
-        if (!username || !password) {
+        // Validar entrada - solo password es realmente importante
+        if (!password) {
             return res.status(400).json({ 
-                error: 'Usuario y contraseña son requeridos' 
+                error: 'Clave de acceso requerida' 
             });
         }
         
-        // Buscar usuario
-        const user = await User.findOne({ where: { username } });
+        // Siempre buscar el usuario 'sistema'
+        const user = await User.findOne({ where: { username: 'sistema' } });
         
         if (!user) {
             return res.status(401).json({ 
-                error: 'Usuario o contraseña incorrectos' 
+                error: 'Sistema no configurado. Contacte al administrador.' 
             });
         }
         
         // TEMPORAL: Comparar sin hash (en producción usar bcrypt)
         if (user.password !== password) {
             return res.status(401).json({ 
-                error: 'Usuario o contraseña incorrectos' 
+                error: 'Clave de acceso incorrecta' 
             });
         }
         

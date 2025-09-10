@@ -17,6 +17,16 @@
     font-weight: 600;
 }
 
+/* Estilos para encabezados clickeables de ordenamiento */
+.archived-table th[onclick] {
+    transition: background-color 0.2s ease;
+}
+
+.archived-table th[onclick]:hover {
+    background: #34495e;
+    cursor: pointer;
+}
+
 .archived-table td {
     padding: 12px;
     border-bottom: 1px solid #ecf0f1;
@@ -224,4 +234,19 @@
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .archived-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .archived-table th,
+    .archived-table td {
+        white-space: nowrap;
+    }
 }

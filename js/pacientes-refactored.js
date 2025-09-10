@@ -193,6 +193,9 @@ function initializeChangeTracking() {
     }
 }
 
+// COMENTADAS - Estas funciones están mejor implementadas en pacientes-ui.js
+// Las funciones de abajo causaban el problema de "sin fecha - Usuario"
+/*
 // Cargar historial de observaciones
 async function loadObservationHistory(patientId) {
     try {
@@ -234,6 +237,7 @@ async function loadTaskHistory(patientId) {
         console.error('Error cargando tareas:', error);
     }
 }
+*/
 
 // Exportar a Excel
 async function exportActivePatientsToExcel() {
@@ -327,6 +331,9 @@ async function printActivePatients() {
     printWindow.document.close();
 }
 
+// COMENTADA - Esta función está mejor implementada en pacientes.js
+// La función de abajo causaba conflictos con el posicionamiento del botón
+/*
 // Agregar botón de compartir
 function addShareButton(patientId, patientName) {
     // Implementación del botón compartir
@@ -345,6 +352,7 @@ function addShareButton(patientId, patientName) {
         modal.appendChild(shareButton);
     }
 }
+*/
 
 // Compartir paciente
 async function sharePatient(patientId, patientName) {
