@@ -926,6 +926,78 @@ async function editPatientBed(event, patientId) {
    }
 }
 
+// Editar previsión del paciente
+async function editPatientPrevision(event, patientId) {
+   event.stopPropagation();
+   
+   const patient = patients.find(p => p.id === patientId);
+   if (!patient) return;
+   
+   const currentPrevision = patient.prevision || '';
+   
+   // Crear HTML para el prompt personalizado
+   const selectHTML = `
+Seleccione la previsión del paciente:
+
+Previsión actual: ${currentPrevision || 'No especificada'}
+
+Opciones:
+1 - Fonasa
+2 - Isapre Banmédica
+3 - Isapre Colmena
+4 - Isapre Consalud
+5 - Isapre Cruz Blanca
+6 - Isapre Nueva Masvida
+7 - Isapre Vida Tres
+8 - Isapre Esencial
+9 - Particular
+10 - Otro
+0 - Sin previsión
+
+Ingrese el número de la opción:`;
+   
+   const selection = prompt(selectHTML);
+   
+   if (selection !== null) {
+       let newPrevision = '';
+       switch(selection.trim()) {
+           case '1': newPrevision = 'Fonasa'; break;
+           case '2': newPrevision = 'Isapre Banmédica'; break;
+           case '3': newPrevision = 'Isapre Colmena'; break;
+           case '4': newPrevision = 'Isapre Consalud'; break;
+           case '5': newPrevision = 'Isapre Cruz Blanca'; break;
+           case '6': newPrevision = 'Isapre Nueva Masvida'; break;
+           case '7': newPrevision = 'Isapre Vida Tres'; break;
+           case '8': newPrevision = 'Isapre Esencial'; break;
+           case '9': newPrevision = 'Particular'; break;
+           case '10': newPrevision = 'Otro'; break;
+           case '0': newPrevision = ''; break;
+           default:
+               if (selection.trim() !== '') {
+                   showToast('Opción inválida. Use 0-10', 'error');
+                   return;
+               }
+       }
+       
+       try {
+           const response = await apiRequest(`/patients/${patientId}/prevision`, {
+               method: 'PUT',
+               body: JSON.stringify({ prevision: newPrevision || null })
+           });
+           
+           if (response.success) {
+               patient.prevision = newPrevision || null;
+               document.getElementById(`prevision-${patientId}`).textContent = newPrevision || 'No especificada';
+               renderPatients();
+               showToast('Previsión actualizada correctamente');
+           }
+       } catch (error) {
+           console.error('Error actualizando previsión:', error);
+           showToast('Error al actualizar previsión', 'error');
+       }
+   }
+}
+
 // Editar fecha de ingreso
 async function editAdmissionDate(event, patientId) {
    event.stopPropagation();

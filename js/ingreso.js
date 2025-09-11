@@ -39,7 +39,7 @@ async function handleAdmission(e) {
         name: document.getElementById('patientName').value,
         age: parseInt(document.getElementById('patientAge').value),
         rut: document.getElementById('noRut').checked ? null : document.getElementById('patientRut').value,
-        phone: null,  // CAMBIADO: Ya no existe el campo de teléfono
+        prevision: document.getElementById('patientPrevision').value || null,
         bed: document.getElementById('patientBed').value || 'Sin asignar',
         admissionDate: document.getElementById('admissionDate').value,
         diagnosis: document.getElementById('diagnosis').value,

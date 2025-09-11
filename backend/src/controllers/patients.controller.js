@@ -67,6 +67,7 @@ exports.getPublicPatient = async (req, res) => {
             name: patient.name,
             age: patient.age,
             rut: patient.rut,
+            prevision: patient.prevision,
             bed: admission?.bed || 'Sin asignar',
             admissionDate: admission?.admission_date,
             diagnosis: admission?.diagnosis_code,
@@ -177,6 +178,7 @@ exports.getActivePatients = async (req, res) => {
                 name: p.name,
                 age: p.age,
                 rut: p.rut,
+                prevision: p.prevision,
                 bed: admission.bed || 'Sin asignar',
                 admissionDate: admission.admission_date,
                 diagnosis: admission.diagnosis_code,
@@ -227,7 +229,7 @@ exports.createPatient = async (req, res) => {
     
     try {
         const {
-            name, age, rut, bed,
+            name, age, rut, prevision, bed,
             admissionDate, diagnosis, diagnosisText, 
             diagnosisDetails, admittedBy
         } = req.body;
@@ -241,7 +243,7 @@ exports.createPatient = async (req, res) => {
         // Si no existe, crear
         if (!patient) {
             patient = await Patient.create({
-                name, age, rut
+                name, age, rut, prevision
             }, { transaction });
         }
         
@@ -407,6 +409,52 @@ exports.updateBed = async (req, res) => {
     }
 };
 
+// Actualizar previsión del paciente
+exports.updatePrevision = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { prevision } = req.body;
+        
+        // Buscar paciente
+        const patient = await Patient.findByPk(id);
+        
+        if (!patient) {
+            return res.status(404).json({ error: 'Paciente no encontrado' });
+        }
+        
+        // Validar que la previsión sea una opción válida
+        const validOptions = [
+            'Fonasa',
+            'Isapre Banmédica',
+            'Isapre Colmena',
+            'Isapre Consalud',
+            'Isapre Cruz Blanca',
+            'Isapre Nueva Masvida',
+            'Isapre Vida Tres',
+            'Isapre Esencial',
+            'Particular',
+            'Otro',
+            null,
+            ''
+        ];
+        if (prevision && !validOptions.includes(prevision)) {
+            return res.status(400).json({ error: 'Previsión inválida' });
+        }
+        
+        patient.prevision = prevision || null;
+        await patient.save();
+        
+        res.json({ 
+            success: true, 
+            prevision: patient.prevision 
+        });
+        
+    } catch (error) {
+        console.error('Error actualizando previsión:', error);
+        res.status(500).json({ error: 'Error al actualizar previsión' });
+    }
+};
+
 // Actualizar médico tratante
 exports.updateAdmittedBy = async (req, res) => {
     try {
@@ -556,6 +604,7 @@ exports.getArchivedPatients = async (req, res) => {
             name: patient.name,
             age: patient.age,
             rut: patient.rut,
+            prevision: patient.prevision,
             admissions: patient.admissions.map(admission => ({
                 admissionId: admission.id,
                 admissionDate: admission.admission_date,

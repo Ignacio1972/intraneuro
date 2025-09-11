@@ -202,6 +202,38 @@
             }
         }
         
+        /* Estilos para las notas del chat */
+        .notes-section {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 5px;
+        }
+        
+        .note-entry {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .note-entry:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .note-header {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+        
+        .note-text {
+            font-size: 14px;
+            color: #1e293b;
+            line-height: 1.5;
+        }
+        
         @media print {
             body {
                 padding: 0;
@@ -215,6 +247,13 @@
             }
             .ficha-content {
                 grid-template-columns: 1fr 1fr;
+            }
+            .notes-section {
+                background: white;
+                border: 1px solid #e5e7eb;
+            }
+            .note-entry {
+                page-break-inside: avoid;
             }
         }
     </style>
@@ -243,7 +282,7 @@
         </div>
     </div>
 
-    <script src="js/api.js?v=21"></script>
+    <script src="js/api.js?v=22"></script>
     <script>
         // Variable global para almacenar todos los pacientes
         let allPatients = [];
@@ -294,6 +333,10 @@
                         <div class="info-row">
                             <span class="info-label">RUT:</span>
                             <span class="info-value">${patient.rut || 'Sin RUT'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Previsión:</span>
+                            <span class="info-value">${patient.prevision || 'No especificada'}</span>
                         </div>
                         <div class="info-row">
                             <span class="info-label">Cama:</span>
@@ -348,53 +391,50 @@
             });
         }
         
-        // Función para formatear las notas del chat a HTML legible
+        // Función simple para formatear notas
         function formatChatNotes(notesData, tipo) {
             if (!notesData) return `<span style="color: #94a3b8;">Sin ${tipo}</span>`;
             
-            // Si es una cadena, intentar parsearla como JSON
-            let notes = notesData;
+            // Si es string, intentar parsear como JSON
             if (typeof notesData === 'string') {
                 try {
-                    notes = JSON.parse(notesData);
-                } catch (e) {
-                    // Si no es JSON, devolver el texto tal cual con formato
-                    if (notesData.trim()) {
-                        return `<div class="notes-section">${notesData}</div>`;
+                    if (notesData.trim().startsWith('[')) {
+                        notesData = JSON.parse(notesData);
+                    } else {
+                        // Es texto plano - intentar detectar múltiples entradas concatenadas
+                        let text = notesData.trim();
+                        if (text) {
+                            // Reemplazar puntos seguidos de mayúscula con salto de línea
+                            text = text.replace(/\.\s+([A-Z])/g, '.<br><br>$1');
+                            // Reemplazar puntos al final seguido de texto con salto
+                            text = text.replace(/\.\s*([A-Z])/g, '.<br><br>$1');
+                        }
+                        return text || `<span style="color: #94a3b8;">Sin ${tipo}</span>`;
                     }
-                    return `<span style="color: #94a3b8;">Sin ${tipo}</span>`;
+                } catch (e) {
+                    // Si falla, mostrar como texto
+                    return notesData.trim() || `<span style="color: #94a3b8;">Sin ${tipo}</span>`;
                 }
             }
             
-            // Si no es un array o está vacío
-            if (!Array.isArray(notes) || notes.length === 0) {
-                return `<span style="color: #94a3b8;">Sin ${tipo}</span>`;
+            // Si es array de notas
+            if (Array.isArray(notesData) && notesData.length > 0) {
+                let result = '';
+                notesData.forEach((note, index) => {
+                    if (note.text) {
+                        // Agregar break line entre notas
+                        if (index > 0) result += '<br><br>';
+                        // Fecha y hora si existe
+                        if (note.timestamp) {
+                            result += `<strong>${note.timestamp}</strong> - ${note.author || 'Sistema'}<br>`;
+                        }
+                        result += note.text;
+                    }
+                });
+                return result || `<span style="color: #94a3b8;">Sin ${tipo}</span>`;
             }
             
-            // Crear HTML con formato bonito
-            let html = '<div class="notes-section">';
-            
-            // Ordenar notas por fecha (más recientes primero)
-            const sortedNotes = [...notes].reverse();
-            
-            sortedNotes.forEach((note, index) => {
-                const fecha = note.timestamp ? note.timestamp.split(',')[0] : '';
-                const hora = note.timestamp ? note.timestamp.split(',')[1]?.trim() : '';
-                const autor = note.author || 'Sistema';
-                const texto = note.text || '';
-                
-                html += `
-                    <div class="note-entry">
-                        <div class="note-header">
-                            📝 ${fecha} ${hora} - <strong>${autor}</strong>
-                        </div>
-                        <div class="note-text">${texto}</div>
-                    </div>
-                `;
-            });
-            
-            html += '</div>';
-            return html;
+            return `<span style="color: #94a3b8;">Sin ${tipo}</span>`;
         }
 
         // Cargar datos al iniciar

@@ -169,6 +169,15 @@ function renderAdmissionData(patient) {
         </div>
         <div class="patient-info-row">
             <span class="info-label">
+                <span onclick="editPatientPrevision(event, ${patient.id})" 
+                      style="cursor: pointer; margin-right: 5px; color: var(--primary-color); font-size: 0.9em;" 
+                      title="Editar previsión">✏️</span>
+                Previsión:
+            </span>
+            <span class="info-value" id="prevision-${patient.id}">${patient.prevision || 'No especificada'}</span>
+        </div>
+        <div class="patient-info-row">
+            <span class="info-label">
                 <span onclick="editPatientBed(event, ${patient.id})" 
                       style="cursor: pointer; margin-right: 5px; color: var(--primary-color); font-size: 0.9em;" 
                       title="Editar cama">✏️</span>

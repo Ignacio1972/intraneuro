@@ -28,6 +28,7 @@ router.post('/:id/admission/tasks', patientsController.createTask);
 router.put('/:id/admission', patientsController.updateActiveAdmission);
 router.put('/:id/discharge', patientsController.updateDischarge);
 router.put('/:id/bed', patientsController.updateBed);
+router.put('/:id/prevision', patientsController.updatePrevision);
 router.put('/:id/admittedBy', patientsController.updateAdmittedBy);
 router.put('/:id/diagnosis-details', patientsController.updateDiagnosisDetails);
 router.put('/:id', patientsController.updatePatient);
